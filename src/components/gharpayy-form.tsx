@@ -118,11 +118,11 @@ export default function GharpayyForm() {
   const sc = getScenarioConfig(lang).find(s => s.id === scenario);
 
   const scenarioEyebrow = () => {
-    const map: Record<string, keyof Parameters<typeof t>[1] extends string ? any : never> = {
+    const map: Record<string, "eyebrowArrived" | "eyebrowEscape" | "eyebrowMoving" | "eyebrowUpgrade" | "eyebrowBudget"> = {
       arrived: "eyebrowArrived", escape: "eyebrowEscape", moving: "eyebrowMoving",
       upgrade: "eyebrowUpgrade", budget: "eyebrowBudget",
     };
-    return scenario ? t(lang, map[scenario] as any) : "";
+    return scenario ? t(lang, map[scenario]) : "";
   };
 
   const handleSubmit = async () => {
