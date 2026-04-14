@@ -176,4 +176,4 @@ export const anim = {
   exit: { x: "-100%", opacity: 0 },
 };
 
-export const trans = { duration: 0.3, ease: [0.4, 0, 0.2, 1] as number[] };
+export const trans = { duration: 0.3, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] };

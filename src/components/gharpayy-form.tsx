@@ -66,17 +66,12 @@ function buildWhatsAppMessage(data: LeadData, lang: Lang, chips: string[], budge
   lines.push("");
   if (data.name) lines.push(`👤 *Name:* ${data.name}`);
   if (data.scenario) {
-    const eyebrowKey = `eyebrow${data.scenario.charAt(0).toUpperCase() + data.scenario.slice(1)}` as keyof typeof import("@/lib/i18n").langLabels extends never ? string : any;
-    lines.push(`📋 *Scenario:* ${t(lang, `scenarioArrived` as any)}`);
-    // Use proper scenario text
-    const scenarioMap: Record<string, string> = {
-      arrived: t(lang, "scenarioArrived"),
-      escape: t(lang, "scenarioEscape"),
-      moving: t(lang, "scenarioMoving"),
-      upgrade: t(lang, "scenarioUpgrade"),
-      budget: t(lang, "scenarioBudget"),
+    const scenarioKeys: Record<string, "scenarioArrived" | "scenarioEscape" | "scenarioMoving" | "scenarioUpgrade" | "scenarioBudget"> = {
+      arrived: "scenarioArrived", escape: "scenarioEscape", moving: "scenarioMoving",
+      upgrade: "scenarioUpgrade", budget: "scenarioBudget",
     };
-    lines[lines.length - 1] = `📋 *Scenario:* ${scenarioMap[data.scenario] || data.scenario}`;
+    const key = scenarioKeys[data.scenario];
+    lines.push(`📋 *Scenario:* ${key ? t(lang, key) : data.scenario}`);
   }
   if (data.preferredLocation) lines.push(`📍 *Location:* ${data.preferredLocation}`);
   lines.push(`💰 *Budget:* ₹${budgetMin.toLocaleString()} – ₹${budgetMax.toLocaleString()}`);
