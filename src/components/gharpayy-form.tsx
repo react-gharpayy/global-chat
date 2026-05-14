@@ -2,9 +2,15 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, Phone, Home as HomeIcon,
-  MessageCircle, Send, Zap, Copy, RotateCcw, Lock,
+  MessageCircle, Send, Zap, Copy, RotateCcw, Lock, Users, Sparkles,
 } from "lucide-react";
 import { ChatHeader } from "@/components/form-ui";
+import { TypingDots, ReadTick } from "@/components/typing-dots";
+import { TrustRing } from "@/components/trust-ring";
+import { MatchPreview } from "@/components/match-preview";
+import { MovePlanCard } from "@/components/move-plan-card";
+import { matchedToday, tierPopularity, visitsBookedToday } from "@/lib/proof-seed";
+import { tap, success } from "@/lib/haptics";
 
 // ─── Gharpayy official WhatsApp ──────────────────────────────────────
 const GHARPAYY_WA = "917988114576";
@@ -410,6 +416,14 @@ function insightFor(step: StepId, d: Data): string | null {
   return null;
 }
 
+// Live social-proof line for completed steps
+function proofFor(step: StepId, d: Data): string | null {
+  if (step === "zone" && d.zone) return `📊 ${matchedToday(d.zone)} people from your zone matched this week.`;
+  if (step === "budget" && d.budget && d.zone) return `🔥 Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
+  if (step === "visit" && d.visit === "visit") return `🚪 ${visitsBookedToday()} visits already booked today.`;
+  return null;
+}
+
 // Question label for HistoryStep (handles dynamic visit step)
 function questionFor(step: StepId, d: Data): string | null {
   if (step === "visit") return VISIT_DYNAMIC(d).q;
@@ -431,6 +445,8 @@ export default function GharpayyForm() {
   const [customNum, setCustomNum] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -441,12 +457,20 @@ export default function GharpayyForm() {
     return () => clearInterval(id);
   }, [tStart, cur]);
 
+  // Aayushi "typing" before each new question
+  useEffect(() => {
+    if (cur === "welcome" || cur === "reveal") { setTyping(false); return; }
+    setTyping(true);
+    const t = setTimeout(() => setTyping(false), 700);
+    return () => clearTimeout(t);
+  }, [cur]);
+
   useEffect(() => {
     const s = STEPS[cur];
     if (s.type === "text" || s.type === "contact" || s.type === "name") {
-      setTimeout(() => inputRef.current?.focus(), 80);
+      setTimeout(() => inputRef.current?.focus(), 800);
     }
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 80);
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 800);
   }, [cur, history.length]);
 
   void now;
@@ -473,6 +497,7 @@ export default function GharpayyForm() {
   }, [history]);
 
   const setIntent = (v: string) => {
+    tap();
     setData(d => ({ ...d, intent: v }));
     if (!tStart) setTStart(Date.now());
     setHistory(h => [...h, "welcome"]);
@@ -480,6 +505,7 @@ export default function GharpayyForm() {
   };
 
   const pickChoice = (key: string, v: string) => {
+    tap();
     setData(d => {
       const next = { ...d, [key]: v };
       const s = STEPS[cur];
@@ -495,6 +521,7 @@ export default function GharpayyForm() {
 
   // Special pick for the dynamic visit step
   const pickVisit = (v: string) => {
+    tap();
     setData(d => {
       const next = { ...d, visit: v };
       setTimeout(() => {
@@ -506,6 +533,7 @@ export default function GharpayyForm() {
   };
 
   const toggleMulti = (key: string, v: string, max: number) => {
+    tap();
     setData(d => {
       const arr = (d as Record<string, unknown>)[key] as string[] | undefined || [];
       const i = arr.indexOf(v);
@@ -517,6 +545,7 @@ export default function GharpayyForm() {
 
   const submitName = () => {
     if (!data.name?.trim()) return;
+    tap();
     setHistory(h => [...h, "name"]);
     setCur("matters");
   };
@@ -525,8 +554,14 @@ export default function GharpayyForm() {
     if ((data.phone || "").replace(/\D/g, "").length < 10) return;
     setElapsed(tStart ? Math.round((Date.now() - tStart) / 1000) : 0);
     setHistory(h => [...h, "contact"]);
-    setCur("reveal");
+    setSubmitting(true);
   };
+
+  const finishSubmit = useCallback(() => {
+    success();
+    setSubmitting(false);
+    setCur("reveal");
+  }, []);
 
   const restart = () => {
     setData({}); setHistory([]); setCur("welcome"); setTStart(null); setElapsed(0);
@@ -561,10 +596,12 @@ export default function GharpayyForm() {
     <div className="min-h-[100dvh] w-full flex justify-center" style={{ background: "var(--brand-navy)" }}>
       <div className="w-full max-w-md relative min-h-[100dvh] flex flex-col overflow-hidden wa-chat-bg">
         <ChatHeader
-          onBack={isInteractive && history.length > 0 ? back : undefined}
+          onBack={isInteractive && history.length > 0 && !submitting ? back : undefined}
           subtitle={subtitle}
           waNumber={GHARPAYY_WA}
           waDisplay={GHARPAYY_WA_DISPLAY}
+          zone={data.zone}
+          showTicker={isInteractive}
         />
 
         {isInteractive && (
@@ -645,7 +682,16 @@ export default function GharpayyForm() {
               </>
             )}
 
+            {/* SUBMITTING — trust ring */}
+            {submitting && <TrustRing onDone={finishSubmit} />}
+
+            {/* TYPING — Aayushi composing */}
+            <AnimatePresence>
+              {typing && !submitting && cur !== "welcome" && cur !== "reveal" && <TypingDots key="typing" />}
+            </AnimatePresence>
+
             {/* ACTIVE STEP */}
+            {!typing && !submitting && (
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={cur}
@@ -826,9 +872,22 @@ export default function GharpayyForm() {
                         Got it{data.name ? `, ${data.name}` : ""} 🙌
                       </p>
                       <p className="text-[13px] text-[#111B21] leading-snug mt-1">
-                        Your stay-hunt is now in the queue with our Gharpayy expert. We have everything we need to start.
+                        You're #{1 + (matchedToday(data.zone) % 4)} in Aayushi's queue. We have everything we need to start.
                       </p>
                     </Bubble>
+
+                    <MatchPreview zone={data.zone} name={data.name} />
+
+                    <MovePlanCard
+                      name={data.name}
+                      zone={data.zone}
+                      tier={data.budget}
+                      moveIn={data.movein ? L_MOVEIN[data.movein] : undefined}
+                      vibes={[
+                        ...(data.matters ?? []).slice(0, 3),
+                        ...(data.gender ? [L_GENDER[data.gender]] : []),
+                      ]}
+                    />
 
                     <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 space-y-3">
                       <div className="flex items-start gap-3">
@@ -919,6 +978,7 @@ export default function GharpayyForm() {
                 )}
               </motion.div>
             </AnimatePresence>
+            )}
 
             <div ref={bottomRef} className="h-2" />
           </div>
@@ -974,9 +1034,14 @@ function ChoiceBlock({
 function HistoryStep({ step, data }: { step: StepId; data: Data }) {
   const echo = echoFor(step, data);
   const insight = insightFor(step, data);
+  const proof = proofFor(step, data);
 
   if (step === "welcome") {
-    return echo ? <Bubble side="out"><p className="text-[13px] text-[#111B21] leading-snug">{echo}</p></Bubble> : null;
+    return echo ? (
+      <Bubble side="out">
+        <p className="text-[13px] text-[#111B21] leading-snug">{echo}<ReadTick /></p>
+      </Bubble>
+    ) : null;
   }
 
   const q = questionFor(step, data);
@@ -990,7 +1055,7 @@ function HistoryStep({ step, data }: { step: StepId; data: Data }) {
       )}
       {echo && (
         <Bubble side="out">
-          <p className="text-[13px] text-[#111B21] leading-snug">{echo}</p>
+          <p className="text-[13px] text-[#111B21] leading-snug">{echo}<ReadTick /></p>
         </Bubble>
       )}
       {insight && (
@@ -1000,6 +1065,11 @@ function HistoryStep({ step, data }: { step: StepId; data: Data }) {
             <span>{insight}</span>
           </p>
         </Bubble>
+      )}
+      {proof && (
+        <div className="self-center max-w-[92%] px-3 py-1.5 rounded-full bg-[#1F47BA]/8 border border-[#1F47BA]/20 text-[10.5px] text-[#1F47BA] font-semibold flex items-center gap-1.5">
+          {proof}
+        </div>
       )}
     </>
   );
