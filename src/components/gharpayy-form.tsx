@@ -350,7 +350,8 @@ export default function GharpayyForm() {
   const total = useMemo(() => estimateTotal(data), [data]);
   const pos = history.length;
   const progress = cur === "welcome" ? 0 : cur === "reveal" ? 100 : Math.min(96, Math.round(pos / total * 100));
-  const elapsedSec = tStart ? Math.round((now || Date.now() - tStart + tStart - tStart) > 0 ? (Date.now() - tStart) / 1000 : 0) : 0;
+  void now; // re-render trigger from interval
+  const elapsedSec = tStart ? Math.round((Date.now() - tStart) / 1000) : 0;
 
   const advance = useCallback((nextId?: StepId) => {
     const s = STEPS[cur];
