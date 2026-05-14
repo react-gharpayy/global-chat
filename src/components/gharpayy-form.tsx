@@ -214,15 +214,41 @@ const STEPS: Record<StepId, Step> = {
   zone: {
     type: "choice", key: "zone",
     q: "Which Gharpayy zone fits your day?",
-    qs: "These are the 5 belts where we actually run properties. Pick the one closest to your daily life.",
+    qs: "5 belts where we actually run properties. Pick the one closest to your daily life.",
     opts: ZONE_OPTS,
+    next: () => "zone_areas",
+  },
+
+  zone_areas: {
+    type: "multi", key: "areas", max: 5, allowOther: true,
+    q: "Any specific areas or landmarks?",
+    qs: "Pick up to 5 — saves us a back-and-forth call later.",
+    opts: [],
+    optional: true,
+    next: () => "zone_radius",
+  },
+
+  zone_radius: {
+    type: "choice", key: "radius",
+    q: "How close do you want to be?",
+    qs: "Tighter radius = fewer options but exact fit. Wider = more variety.",
+    opts: RADIUS_OPTS,
+    optional: true,
+    next: () => "zone_special",
+  },
+
+  zone_special: {
+    type: "text", key: "special_req", optional: true,
+    q: "Any special requirement for the place? (Optional)",
+    qs: "One line is enough. Skip if nothing comes to mind.",
+    ph: "e.g. near a metro stop, parking for car, vegetarian floor…",
     next: () => "workplace",
   },
 
   workplace: {
     type: "text", key: "workplace",
     q: "Office or college name?",
-    qs: "Exact name, not just area. Lets us see how far it really is and what kind of crowd you'll fit with.",
+    qs: "Exact name beats area — we match crowd + commute properly.",
     ph: "e.g. Infosys EC Phase 1, IIM Bangalore, Cisco Cessna…",
     chips: ["Infosys", "Wipro", "Cisco", "Accenture", "IBM Manyata", "Embassy Tech", "ITPL", "Christ University"],
     next: () => "budget",
@@ -233,11 +259,19 @@ const STEPS: Record<StepId, Step> = {
     q: "Which Gharpayy tier feels right?",
     qs: "Pick the one closest to what you've planned. We'll match inside it.",
     opts: [
-      { v: "basic",   e: "✨", t: "BASIC  ₹7k - ₹11k",   d: "Smart. Simple. Reliable. Shared rooms with essentials, food, Wi-Fi." },
-      { v: "classic", e: "🏠", t: "CLASSIC  ₹12k - ₹17k", d: "Comfort that feels natural. Larger layouts, better interiors, good ventilation." },
-      { v: "prive",   e: "🛏️", t: "PRIVE  ₹17k - ₹26k",  d: "Your room. Your space. Your peace. Premium finishes, best food." },
-      { v: "luxemax", e: "👑", t: "LUXE MAX  ₹25k - ₹45k", d: "The flagship benchmark. Hotel-grade housekeeping." },
+      { v: "basic",   e: "", t: "BASIC  ₹7k - ₹11k",   d: "Smart. Simple. Reliable. Shared rooms with essentials, food, Wi-Fi." },
+      { v: "classic", e: "", t: "CLASSIC  ₹12k - ₹17k", d: "Comfort that feels natural. Larger layouts, better interiors, good ventilation." },
+      { v: "prive",   e: "", t: "PRIVE  ₹17k - ₹26k",  d: "Your room. Your space. Your peace. Premium finishes, best food." },
+      { v: "luxemax", e: "", t: "LUXE MAX  ₹25k - ₹45k", d: "The flagship benchmark. Hotel-grade housekeeping." },
     ],
+    next: () => "budget_exact",
+  },
+
+  budget_exact: {
+    type: "choice", key: "budget_exact",
+    q: "Real monthly ceiling?",
+    qs: "Honest number means we only show stays that fit. Saves the back-and-forth.",
+    opts: [],
     next: () => "room",
   },
 
@@ -246,10 +280,10 @@ const STEPS: Record<StepId, Step> = {
     q: "What kind of space do you need?",
     qs: "About what fits your life right now.",
     opts: [
-      { v: "private", e: "🛏️", t: "My own room - full privacy", d: "Your own lock, your own quiet." },
-      { v: "double", e: "👥", t: "Double sharing - one roommate", d: "Most popular. Cost & comfort balance." },
-      { v: "triple", e: "👨‍👩‍👦", t: "Triple sharing - budget priority", d: "Most affordable. Roommates carefully vetted." },
-      { v: "flex", e: "✨", t: "Surprise me - best deal", d: "We match based on everything else." },
+      { v: "private", e: "", t: "My own room — full privacy", d: "Your own lock, your own quiet." },
+      { v: "double",  e: "", t: "Double sharing — one roommate", d: "Most popular. Cost & comfort balance." },
+      { v: "triple",  e: "", t: "Triple sharing — budget priority", d: "Most affordable. Roommates carefully vetted." },
+      { v: "flex",    e: "", t: "Surprise me — best deal", d: "We match based on everything else." },
     ],
     next: () => "gender",
   },
