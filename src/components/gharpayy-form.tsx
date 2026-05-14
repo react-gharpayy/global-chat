@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, Sparkles, Phone, Shield, Home as HomeIcon,
-  MessageCircle, Send, Zap, Copy, RotateCcw,
+  MessageCircle, Send, Zap, Copy, RotateCcw, Lock,
 } from "lucide-react";
 import { ChatHeader } from "@/components/form-ui";
 
@@ -36,44 +36,59 @@ type Data = {
   name?: string; phone?: string;
 };
 
-// ─── BLR insights — every screen adds value ──────────────────────────
+// ─── BLR insights — about the people & vibe, NOT rent ────────────────
 const AREA_INSIGHTS: Record<string, string> = {
-  koramangala: "Koramangala avg ₹13,500/mo · startup hub, foodie heaven, Sony Signal jams",
-  hsr: "HSR avg ₹11,200/mo · clean, parky, metro coming 2026",
-  whitefield: "Whitefield avg ₹10,400/mo · ITPL crowd, weekend brewery scene",
-  indiranagar: "Indiranagar avg ₹15,800/mo · walkable, premium, 100ft Rd nightlife",
-  bellandur: "Bellandur avg ₹10,800/mo · ORR tech-park central",
-  electronic: "E-City avg ₹8,500/mo · closest to Infosys/Wipro/Biocon",
-  marathahalli: "Marathahalli avg ₹9,800/mo · ORR tech parks, dense buses",
-  btm: "BTM avg ₹9,200/mo · central, cheap, great metro",
-  sarjapur: "Sarjapur Rd avg ₹11,500/mo · new tech, calmer, growing fast",
-  hebbal: "Hebbal avg ₹10,200/mo · airport side, Manyata tech park",
-  jp: "JP Nagar avg ₹10,500/mo · quieter, family vibe",
+  koramangala: "Founders, designers, late-night coders. Third Wave & Blue Tokai on every other corner — your weekday office becomes a café.",
+  hsr: "Young pros, lots of women in tech, weekend cyclists. Park-rich, walkable, you'll actually leave your room.",
+  whitefield: "ITPL / SAP crowd, expat families. Phoenix Mall = the social hub. Brewery weekends are a thing.",
+  indiranagar: "Senior pros, creatives, musicians. 100ft Road = the nightlife capital. You can walk to almost everything.",
+  bellandur: "ORR tech crews — Accenture, Cisco, Wipro. Lakefront runs in the morning, big tech-park lunch culture by noon.",
+  electronic: "Infosys / Wipro / Biocon engineers. Quieter, suburban, predictable. Easy weekday life if your office is here.",
+  marathahalli: "ORR mix — engineers, pilots, students. Dense bus routes, food streets, never really sleeps.",
+  btm: "Most central spot in BLR. Mixed crowd, students, early-career folk. Metro means anywhere in 30 min.",
+  sarjapur: "New tech corridor — Wipro, Accenture, startups. Calmer, leafier, growing fast. The next Koramangala if you ask locals.",
+  hebbal: "Manyata Tech Park crowd, airport-side professionals. Lake views in the morning, good schools nearby.",
+  jp: "Family vibe, mature neighbourhood. South-Indian breakfast belt. Quieter floors, older trees, real community feel.",
 };
 function areaInsight(area?: string) {
   if (!area) return null;
   const a = area.toLowerCase();
   for (const k of Object.keys(AREA_INSIGHTS)) if (a.includes(k)) return AREA_INSIGHTS[k];
-  return `We have verified PGs near ${area.split(",")[0]} — Aayushi will share 3–5 today.`;
+  return `${area.split(",")[0]} — we've placed residents nearby. Aayushi will share the local vibe and matched profiles when she calls.`;
 }
+
+// Budget tier = which kind of person you'll be living with (NOT rent talk)
 const BUDGET_INSIGHT: Record<string, string> = {
-  u8: "Budget tier · 40+ verified shared rooms in BTM, E-City, Marathahalli",
-  "8to12": "Sweet spot · 60% of our residents pay this — best value/quality ratio",
-  "12to18": "Premium tier · single rooms, AC, home-cooked food, prime areas",
-  "18to25": "Top comfort · attached bath, near-studio quality",
-  "25to35": "Hotel-grade · housekeeping daily, walk-to-office options",
-  "35plus": "Serviced apartment territory · we have a curated handful",
-};
-const STORY_INSIGHT: Record<string, string> = {
-  newjob: "73% of new joiners regret their first PG. We'll get yours right.",
-  upgrade: "9 in 10 of our residents came from another PG. You're not alone.",
-  intern: "We have flexible 2–6 month stays with zero lock-in.",
-  relocate: "BLR rents jumped 12% in 2025 — let's lock your room before you land.",
-  blr: "Avg upgrader saves ₹2,000/mo by switching from chain PGs to verified locals.",
-  explore: "No pressure — we'll show you what's actually available in your range.",
+  u8: "You'll be with students, interns and early-career folk — tight, fun, no-frills crowd.",
+  "8to12": "Most of our community lives here — first-job joiners, small-team engineers, the easy-going middle.",
+  "12to18": "Working pros who want privacy after 7pm. Calmer floors, working WiFi, real beds, no chaos.",
+  "18to25": "Senior engineers, designers, travelling consultants. Low noise, attached bath standard.",
+  "25to35": "Founders, expats, weekly travellers. Hotel-grade housekeeping, walk-to-office options.",
+  "35plus": "Serviced-apartment vibe. Privacy, polished kitchens, occasional concierge.",
 };
 
-// ─── Step engine ─────────────────────────────────────────────────────
+// Story-based insight — community / what to expect (no rent claims)
+const STORY_INSIGHT: Record<string, string> = {
+  newjob: "73% of new joiners regret their first PG. We won't let that be you — we'll match you with people from your kind of work.",
+  upgrade: "9 in 10 of our residents came from another PG that didn't work out. You're in good company.",
+  intern: "Flexible 2–6 month stays, zero lock-in. Many interns come back as full-timers in the same room.",
+  relocate: "We hold your room before you land. Some residents move in straight from the airport with one suitcase.",
+  blr: "Quiet neighbours, working WiFi, owner who actually picks up. The boring stuff is what changes your day.",
+  explore: "No pressure. We'll show you what's actually available — even the imperfect ones, honestly.",
+};
+
+// Persona-style hint when a worry is picked
+const WORRY_INSIGHT: Record<string, string> = {
+  deposit: "Every paisa is on an official Gharpayy receipt — your deposit is never with a random owner.",
+  bad_exp: "You're not the first. Most residents tell us their old PG horror story on day 1.",
+  budget_unsure: "We'll find honest options — and the GHAR1000 coupon takes a chunk off month one.",
+  parents: "Parents call us all the time. Many visit before booking. You can put us on a call with them.",
+  visit: "We arrange visits every single day. Walk in, see the room, meet the people. Zero pressure.",
+  deciding: "We'll tell you the honest differences — even if a competitor wins on something.",
+  ready: "Same-day matching. Aayushi will call within 30 minutes.",
+};
+
+// ─── Step engine (UNCHANGED — questions are perfect) ──────────────────
 const STEPS: Record<StepId, Step> = {
   welcome: { type: "welcome" },
 
@@ -251,21 +266,6 @@ const STEPS: Record<StepId, Step> = {
   reveal: { type: "reveal" },
 };
 
-// ─── Estimate total steps for accurate progress ──────────────────────
-function estimateTotal(d: Data): number {
-  const base: StepId[] = ["story","movein","area","budget","room","gender","matters","dealbreakers","worry","contact"];
-  if (!d.story || (d.story !== "upgrade" && d.story !== "blr")) base.unshift("in_blr");
-  if (d.in_blr === "no" || d.story === "relocate") {
-    const i = base.indexOf("movein"); base.splice(i, 0, "arrival", "flight");
-  } else if (d.in_blr === "yes" || d.story === "upgrade" || d.story === "blr") {
-    const i = base.indexOf("movein"); base.splice(i, 0, "curr_stay");
-    if (d.curr_stay && d.curr_stay !== "hotel" && d.curr_stay !== "friend" && d.curr_stay !== "nowhere") {
-      base.splice(base.indexOf("movein"), 0, "notice");
-    }
-  }
-  return Math.max(12, base.length);
-}
-
 // ─── Budget tiers ────────────────────────────────────────────────────
 const BUDGETS = [
   { v: "u8",     r: "Under ₹8,000",       d: "Budget-first — hidden gems exist" },
@@ -276,7 +276,7 @@ const BUDGETS = [
   { v: "35plus", r: "₹35,000+",           d: "Luxury / serviced apartment" },
 ];
 
-// ─── Labels for reveal & WA message ──────────────────────────────────
+// ─── Labels ──────────────────────────────────────────────────────────
 const L_INTENT: Record<string,string> = { perfect:"Homely stay", budget:"Most affordable", nearby:"Close to office/college", safe:"Safety & trust priority" };
 const L_STORY: Record<string,string> = { newjob:"New job/college start", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR — upgrading", explore:"Exploring options" };
 const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"PG/hostel", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT — not settled" };
@@ -290,7 +290,7 @@ const L_WORRY: Record<string,string> = { deposit:"Deposit security", bad_exp:"Pa
 
 function buildMsg(d: Data, elapsed: number): string {
   const lines: string[] = [];
-  lines.push("*GHARPAYY* ⚡ New Lead");
+  lines.push("*GHARPAYY EIE* ⚡ New Lead");
   lines.push("————————————————");
   lines.push(`📝 *Name:* ${d.name || "—"}`);
   lines.push(`📱 *Phone:* ${d.phone || "—"}`);
@@ -312,9 +312,33 @@ function buildMsg(d: Data, elapsed: number): string {
   if (d.worry) lines.push(`\n💬 *Main concern:* ${L_WORRY[d.worry]}`);
   lines.push(`\n🎟️ *Coupon:* ${COUPON} (₹1,000 off)`);
   lines.push("————————————————");
-  lines.push(`via Gharpayy SuperStay${elapsed ? ` · ${elapsed}s` : ""}`);
+  lines.push(`via Gharpayy EIE${elapsed ? ` · ${elapsed}s` : ""}`);
   lines.push("Call within 30 mins.");
   return lines.join("\n");
+}
+
+// Echo label for a completed step
+function echoFor(step: StepId, d: Data): string | null {
+  const s = STEPS[step];
+  if (step === "welcome") return d.intent ? L_INTENT[d.intent] : null;
+  if (!s) return null;
+  if (s.type === "choice") {
+    const v = (d as any)[s.key]; const opt = s.opts.find(o => o.v === v);
+    return opt ? `${opt.e} ${opt.t}` : null;
+  }
+  if (s.type === "text") { const v = (d as any)[s.key]; return v ? String(v) : null; }
+  if (s.type === "budget") { const b = BUDGETS.find(x => x.v === d.budget); return b ? `💰 ${b.r}` : null; }
+  if (s.type === "multi") { const arr = (d as any)[s.key] as string[] | undefined; return arr?.length ? arr.map(x => `✓ ${x}`).join("  ") : null; }
+  return null;
+}
+
+// Insight (post-answer) for a given step
+function insightFor(step: StepId, d: Data): string | null {
+  if (step === "story" && d.story) return STORY_INSIGHT[d.story] || null;
+  if (step === "area" && d.area) return areaInsight(d.area);
+  if (step === "budget" && d.budget) return BUDGET_INSIGHT[d.budget] || null;
+  if (step === "worry" && d.worry) return WORRY_INSIGHT[d.worry] || null;
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -322,7 +346,7 @@ function buildMsg(d: Data, elapsed: number): string {
 // ═══════════════════════════════════════════════════════════════════════
 export default function GharpayyForm() {
   const [data, setData] = useState<Data>({});
-  const [history, setHistory] = useState<StepId[]>([]);
+  const [history, setHistory] = useState<StepId[]>([]); // completed steps in order
   const [cur, setCur] = useState<StepId>("welcome");
   const [tStart, setTStart] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -331,6 +355,8 @@ export default function GharpayyForm() {
   const [showCustom, setShowCustom] = useState(false);
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // live timer
   useEffect(() => {
@@ -339,19 +365,18 @@ export default function GharpayyForm() {
     return () => clearInterval(id);
   }, [tStart, cur]);
 
-  // autofocus
+  // autofocus + autoscroll
   useEffect(() => {
     const s = STEPS[cur];
     if (s.type === "text" || s.type === "contact") {
       setTimeout(() => inputRef.current?.focus(), 80);
     }
-  }, [cur]);
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 80);
+  }, [cur, history.length]);
 
-  const total = useMemo(() => estimateTotal(data), [data]);
-  const pos = history.length;
-  const progress = cur === "welcome" ? 0 : cur === "reveal" ? 100 : Math.min(96, Math.round(pos / total * 100));
-  void now; // re-render trigger from interval
+  void now;
   const elapsedSec = tStart ? Math.round((Date.now() - tStart) / 1000) : 0;
+  const fullness = Math.min(100, Math.round((history.length / 13) * 100));
 
   const advance = useCallback((nextId?: StepId) => {
     const s = STEPS[cur];
@@ -425,415 +450,466 @@ export default function GharpayyForm() {
     } catch {}
   };
 
+  const isInteractive = cur !== "welcome" && cur !== "reveal";
+  const subtitle = cur === "welcome"
+    ? "Easy-In · Easy-Stay · replies in minutes"
+    : cur === "reveal"
+      ? "✓ Lead received — Aayushi notified"
+      : `Easy-In · Easy-Stay · ⚡ fast lane (${elapsedSec}s)`;
+
   return (
     <div className="min-h-[100dvh] w-full flex justify-center" style={{ background: "var(--brand-navy)" }}>
       <div className="w-full max-w-md relative min-h-[100dvh] flex flex-col overflow-hidden wa-chat-bg">
         <ChatHeader
-          onBack={cur !== "welcome" && cur !== "reveal" && history.length > 0 ? back : undefined}
-          subtitle={cur === "welcome" ? "online · usually replies in 10 min" : cur === "reveal" ? "✓ Lead received" : `Step ${pos} of ~${total} · ${elapsedSec}s`}
+          onBack={isInteractive && history.length > 0 ? back : undefined}
+          subtitle={subtitle}
+          waNumber={GHARPAYY_WA}
+          waDisplay={GHARPAYY_WA_DISPLAY}
         />
 
-        {/* Progress bar */}
-        {cur !== "welcome" && (
-          <div className="h-1 bg-black/5">
-            <motion.div className="h-full bg-gradient-to-r from-[#25D366] to-[#128C7E]"
+        {/* Subtle progress bar (no step counter) */}
+        {isInteractive && (
+          <div className="h-[3px] bg-black/5">
+            <motion.div className="h-full bg-[#25D366]"
               initial={false}
-              animate={{ width: `${progress}%` }}
+              animate={{ width: `${fullness}%` }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }} />
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <AnimatePresence mode="wait">
-            <motion.div key={cur}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-              className="flex flex-col gap-3">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="flex flex-col gap-2.5">
 
-              {/* ═══════ WELCOME ═══════ */}
-              {cur === "welcome" && (
-                <>
-                  <div className="flex justify-center mb-1">
-                    <span className="px-3 py-1 rounded-full text-[11px] font-medium text-[#54656F] bg-[#E1F5FE]/90 shadow-sm">Today</span>
+            {/* Date pill */}
+            <div className="flex justify-center mb-1">
+              <span className="px-3 py-1 rounded-full text-[11px] font-medium text-[#54656F] bg-white/85 shadow-sm">Today</span>
+            </div>
+
+            {/* "Faster reply" hint banner */}
+            {isInteractive && (
+              <div className="self-center max-w-[92%] px-3 py-1.5 rounded-full bg-[#FFF6D9] border border-[#FFC72C]/40 text-[10.5px] text-[#5A3A00] font-medium flex items-center gap-1.5 mb-1">
+                <Zap className="w-3 h-3 text-[#E5A800] fill-[#FFC72C]" />
+                The more you share, the faster Aayushi replies — usually under 30 min.
+              </div>
+            )}
+
+            {/* ───────── HISTORY (completed steps) ───────── */}
+            {history.map((step, idx) => (
+              <HistoryStep
+                key={`${step}-${idx}`}
+                step={step}
+                data={data}
+              />
+            ))}
+
+            {/* ═══════ WELCOME ═══════ */}
+            {cur === "welcome" && (
+              <>
+                <Bubble side="in" delay={0.05}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-1">Aayushi · Gharpayy</p>
+                  <p className="text-[15px] font-semibold text-[#111B21] leading-snug">Hey! 👋</p>
+                  <p className="text-[14px] text-[#111B21] leading-snug mt-1">
+                    Your Bangalore home is <b>30 seconds</b> away. This isn't a form — it's a chat.
+                    Tell us what you're really looking for. <b>Zero brokerage</b>, real verified rooms.
+                  </p>
+                </Bubble>
+                <Bubble side="in" delay={0.18}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#E5A800]" />
+                    <p className="text-[11px] font-bold text-[#5A3A00] uppercase tracking-wider">₹1,000 off — unlocks at the end</p>
                   </div>
-                  <Bubble side="in" delay={0.05}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#1F47BA] mb-1">Aayushi · Gharpayy</p>
-                    <p className="text-[15px] font-semibold text-[#111B21] leading-snug">Hey! 👋</p>
-                    <p className="text-[14px] text-[#111B21] leading-snug mt-1">
-                      Your Bangalore home is <b>30 seconds</b> away. This isn't a form — it's a conversation.
-                      Tell us what you're really looking for. <b>Zero brokerage</b>, real verified rooms.
-                    </p>
-                  </Bubble>
-                  <Bubble side="in" delay={0.18}>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#FFC72C]" />
-                      <p className="text-[11px] font-bold text-[#5A3A00] uppercase tracking-wider">₹1,000 off — unlocks at the end</p>
-                    </div>
-                    <p className="text-[13px] text-[#111B21] leading-snug">What brings you here today?</p>
-                  </Bubble>
+                  <p className="text-[13px] text-[#111B21] leading-snug">What brings you here today?</p>
+                </Bubble>
 
-                  <div className="space-y-2 mt-1">
-                    {[
-                      { v: "perfect", e: "🏡", t: "I want the most homely stay possible", d: "Feel at home — not just have a room" },
-                      { v: "budget",  e: "💸", t: "The most affordable option in BLR",   d: "Best value is all I care about" },
-                      { v: "nearby",  e: "📍", t: "Close to my office or college",        d: "My commute is killing me" },
-                      { v: "safe",    e: "🔒", t: "Safe, trustworthy, family-approved",   d: "Safety matters most" },
-                    ].map((o, i) => (
-                      <motion.button key={o.v} type="button"
-                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 + i * 0.06 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => setIntent(o.v)}
-                        className="w-full flex items-center gap-3 rounded-2xl p-3 text-left bg-white border border-black/5 shadow-sm hover:shadow-md hover:border-[#25D366] active:scale-95 transition-all group">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl bg-[#25D366]/10 border border-[#25D366]/20">{o.e}</div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
-                          <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[#25D366] opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all flex-shrink-0" />
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-[#667781] mt-3">
-                    <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-[#25D366]" /> Zero brokerage</span>
-                    <span>·</span>
-                    <span className="flex items-center gap-1"><Phone className="w-3 h-3 text-[#25D366]" /> Personal call</span>
-                    <span>·</span>
-                    <span className="flex items-center gap-1"><HomeIcon className="w-3 h-3 text-[#25D366]" /> Verified PGs</span>
-                  </div>
-                </>
-              )}
-
-              {/* ═══════ CHOICE STEP ═══════ */}
-              {STEPS[cur].type === "choice" && cur !== "welcome" && cur !== "reveal" && (
-                <>
-                  <UserEcho prev={history[history.length - 1]} data={data} />
-                  <Bubble side="in" delay={0.05}>
-                    <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
-                    <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
-                  </Bubble>
-                  {ContextInsight(cur, data)}
-                  <div className="space-y-2">
-                    {((STEPS[cur] as any).opts as ChoiceOpt[]).map((o, i) => {
-                      const on = (data as any)[(STEPS[cur] as any).key] === o.v;
-                      return (
-                        <motion.button key={o.v} type="button"
-                          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.12 + i * 0.04 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => pickChoice((STEPS[cur] as any).key, o.v)}
-                          className={`w-full flex items-center gap-3 rounded-2xl p-3 text-left border shadow-sm transition-all group ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${on ? "bg-[#25D366]/20 border border-[#25D366]/40" : "bg-[#25D366]/10 border border-[#25D366]/20"}`}>{o.e}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
-                            <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
-                          </div>
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${on ? "bg-[#25D366]" : "border border-black/10"}`}>
-                            {on && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                  {(STEPS[cur] as any).optional && (
-                    <button type="button" onClick={() => advance()} className="text-[12px] text-[#667781] hover:text-[#25D366] py-2 transition-colors">
-                      Skip this one →
-                    </button>
-                  )}
-                </>
-              )}
-
-              {/* ═══════ TEXT STEP ═══════ */}
-              {STEPS[cur].type === "text" && (
-                <>
-                  <UserEcho prev={history[history.length - 1]} data={data} />
-                  <Bubble side="in" delay={0.05}>
-                    <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
-                    <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
-                  </Bubble>
-                  {areaInsight(data.area) && cur === "area" && data.area && data.area.length > 2 && (
-                    <Bubble side="in" delay={0.1}>
-                      <div className="flex items-start gap-2">
-                        <span className="text-base">💡</span>
-                        <p className="text-[12.5px] text-[#5A3A00] leading-snug">{areaInsight(data.area)}</p>
+                <div className="space-y-2 mt-1">
+                  {[
+                    { v: "perfect", t: "I want the most homely stay possible", d: "Feel at home — not just have a room" },
+                    { v: "budget",  t: "The most affordable option in BLR",   d: "Best value is all I care about" },
+                    { v: "nearby",  t: "Close to my office or college",        d: "My commute is killing me" },
+                    { v: "safe",    t: "Safe, trustworthy, family-approved",   d: "Safety matters most" },
+                  ].map((o, i) => (
+                    <motion.button key={o.v} type="button"
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + i * 0.06 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setIntent(o.v)}
+                      className="w-full flex items-center gap-3 rounded-2xl p-3 text-left bg-white border border-black/5 shadow-sm hover:shadow-md hover:border-[#25D366] active:scale-95 transition-all group">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
+                        <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
                       </div>
+                      <ArrowRight className="w-4 h-4 text-[#25D366] opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                    </motion.button>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-[#667781] mt-3">
+                  <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-[#25D366]" /> Zero brokerage</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1"><Lock className="w-3 h-3 text-[#25D366]" /> Private</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1"><HomeIcon className="w-3 h-3 text-[#25D366]" /> Verified PGs</span>
+                </div>
+              </>
+            )}
+
+            {/* ═══════ ACTIVE STEP ═══════ */}
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={cur}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="flex flex-col gap-2.5"
+              >
+                {/* CHOICE */}
+                {STEPS[cur].type === "choice" && (
+                  <>
+                    <Bubble side="in" delay={0.05}>
+                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
+                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
                     </Bubble>
-                  )}
-                  <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                    <input ref={inputRef} type="text"
-                      placeholder={(STEPS[cur] as any).ph}
-                      value={(data as any)[(STEPS[cur] as any).key] || ""}
-                      onChange={e => setData(d => ({ ...d, [(STEPS[cur] as any).key]: e.target.value }))}
-                      onKeyDown={e => { if (e.key === "Enter" && ((data as any)[(STEPS[cur] as any).key] || "").length > 1) advance(); }}
-                      className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
-                    {(STEPS[cur] as any).chips && (
-                      <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-black/5">
-                        {((STEPS[cur] as any).chips as string[]).map(c => (
-                          <button key={c} type="button"
-                            onClick={() => setData(d => ({ ...d, [(STEPS[cur] as any).key]: c }))}
-                            className="px-2.5 py-1 rounded-full text-[11px] font-medium text-[#1F47BA] bg-[#1F47BA]/8 hover:bg-[#1F47BA]/15 border border-[#1F47BA]/15 transition-colors">
-                            {c}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <ContinueBtn disabled={!((data as any)[(STEPS[cur] as any).key] || "").length || ((data as any)[(STEPS[cur] as any).key] || "").length < 2} onClick={() => advance()} />
-                </>
-              )}
-
-              {/* ═══════ BUDGET STEP ═══════ */}
-              {STEPS[cur].type === "budget" && (
-                <>
-                  <UserEcho prev={history[history.length - 1]} data={data} />
-                  <Bubble side="in" delay={0.05}>
-                    <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
-                    <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
-                  </Bubble>
-                  {data.budget && BUDGET_INSIGHT[data.budget] && (
-                    <Bubble side="in" delay={0.1}>
-                      <div className="flex items-start gap-2">
-                        <span className="text-base">💡</span>
-                        <p className="text-[12.5px] text-[#5A3A00] leading-snug">{BUDGET_INSIGHT[data.budget]}</p>
-                      </div>
-                    </Bubble>
-                  )}
-                  <div className="space-y-2">
-                    {BUDGETS.map((b, i) => {
-                      const on = data.budget === b.v;
-                      return (
-                        <motion.button key={b.v} type="button"
-                          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.12 + i * 0.04 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => {
-                            setData(d => ({ ...d, budget: b.v }));
-                            setTimeout(() => advance(), 280);
-                          }}
-                          className={`w-full flex items-center justify-between gap-3 rounded-2xl p-3 text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-[#111B21] text-[14px] leading-tight">{b.r}</p>
-                            <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{b.d}</p>
-                          </div>
-                          <div className={`text-lg font-bold flex-shrink-0 ${on ? "text-[#25D366]" : "text-[#9aa6ad]"}`}>{on ? "✓" : "→"}</div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-
-              {/* ═══════ MULTI STEP ═══════ */}
-              {STEPS[cur].type === "multi" && (
-                <>
-                  <UserEcho prev={history[history.length - 1]} data={data} />
-                  <Bubble side="in" delay={0.05}>
-                    <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
-                    <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
-                  </Bubble>
-                  <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                    <div className="flex flex-wrap gap-1.5">
-                      {((STEPS[cur] as any).opts as string[]).map(o => {
-                        const arr = ((data as any)[(STEPS[cur] as any).key] as string[]) || [];
-                        const on = arr.includes(o);
-                        const max = (STEPS[cur] as any).max as number;
-                        const disabled = !on && arr.length >= max;
+                    <div className="space-y-2">
+                      {((STEPS[cur] as any).opts as ChoiceOpt[]).map((o, i) => {
+                        const on = (data as any)[(STEPS[cur] as any).key] === o.v;
                         return (
-                          <button key={o} type="button"
-                            disabled={disabled}
-                            onClick={() => toggleMulti((STEPS[cur] as any).key, o, max)}
-                            className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : disabled ? "bg-black/5 text-black/30 border-transparent cursor-not-allowed" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
-                            {on && "✓ "}{o}
-                          </button>
+                          <motion.button key={o.v} type="button"
+                            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 + i * 0.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => pickChoice((STEPS[cur] as any).key, o.v)}
+                            className={`w-full flex items-center gap-3 rounded-2xl p-3 text-left border shadow-sm transition-all group ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
+                            <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
+                              <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
+                            </div>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${on ? "bg-[#25D366]" : "border border-black/10"}`}>
+                              {on && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                            </div>
+                          </motion.button>
                         );
                       })}
                     </div>
-                    <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
-                      {(((data as any)[(STEPS[cur] as any).key] as string[]) || []).length} of {(STEPS[cur] as any).max} selected
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    {(STEPS[cur] as any).optional && (
+                    <SkipRow onSkip={() => advance()} />
+                  </>
+                )}
+
+                {/* TEXT */}
+                {STEPS[cur].type === "text" && (
+                  <>
+                    <Bubble side="in" delay={0.05}>
+                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
+                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
+                    </Bubble>
+                    <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+                      <input ref={inputRef} type="text"
+                        placeholder={(STEPS[cur] as any).ph}
+                        value={(data as any)[(STEPS[cur] as any).key] || ""}
+                        onChange={e => setData(d => ({ ...d, [(STEPS[cur] as any).key]: e.target.value }))}
+                        onKeyDown={e => { if (e.key === "Enter" && ((data as any)[(STEPS[cur] as any).key] || "").length > 1) advance(); }}
+                        className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+                      {(STEPS[cur] as any).chips && (
+                        <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-black/5">
+                          {((STEPS[cur] as any).chips as string[]).map(c => (
+                            <button key={c} type="button"
+                              onClick={() => setData(d => ({ ...d, [(STEPS[cur] as any).key]: c }))}
+                              className="px-2.5 py-1 rounded-full text-[11px] font-medium text-[#128C7E] bg-[#25D366]/8 hover:bg-[#25D366]/15 border border-[#25D366]/20 transition-colors">
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
                       <button type="button" onClick={() => advance()}
                         className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
                         Skip
                       </button>
-                    )}
-                    <ContinueBtn
-                      disabled={!(STEPS[cur] as any).optional && (((data as any)[(STEPS[cur] as any).key] as string[]) || []).length === 0}
-                      onClick={() => advance()}
-                      className="flex-1"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* ═══════ CONTACT STEP ═══════ */}
-              {STEPS[cur].type === "contact" && (
-                <>
-                  <Bubble side="in" delay={0.05}>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#FFC72C]" />
-                      <p className="text-[11px] font-bold text-[#5A3A00] uppercase tracking-wider">Last step — your ₹1,000 is almost yours</p>
+                      <ContinueBtn
+                        disabled={!((data as any)[(STEPS[cur] as any).key] || "").length || ((data as any)[(STEPS[cur] as any).key] || "").length < 2}
+                        onClick={() => advance()}
+                        className="flex-1"
+                      />
                     </div>
-                    <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
-                    <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
-                  </Bubble>
-                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 space-y-3">
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#667781] block mb-1.5">Your name</label>
-                      <input ref={inputRef} type="text" placeholder="What should we call you?"
-                        value={data.name || ""}
-                        onChange={e => setData(d => ({ ...d, name: e.target.value }))}
-                        className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                  </>
+                )}
+
+                {/* BUDGET */}
+                {STEPS[cur].type === "budget" && (
+                  <>
+                    <Bubble side="in" delay={0.05}>
+                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
+                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
+                    </Bubble>
+                    <div className="space-y-2">
+                      {BUDGETS.map((b, i) => {
+                        const on = data.budget === b.v;
+                        return (
+                          <motion.button key={b.v} type="button"
+                            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 + i * 0.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => {
+                              setData(d => ({ ...d, budget: b.v }));
+                              setTimeout(() => advance(), 280);
+                            }}
+                            className={`w-full flex items-center justify-between gap-3 rounded-2xl p-3 text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-[#111B21] text-[14px] leading-tight">{b.r}</p>
+                              <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{b.d}</p>
+                            </div>
+                            <div className={`text-lg font-bold flex-shrink-0 ${on ? "text-[#25D366]" : "text-[#9aa6ad]"}`}>{on ? "✓" : "→"}</div>
+                          </motion.button>
+                        );
+                      })}
                     </div>
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#667781] block mb-1.5">WhatsApp number</label>
-                      <input type="tel" placeholder="10-digit mobile" inputMode="numeric"
-                        value={data.phone || ""}
-                        onChange={e => setData(d => ({ ...d, phone: e.target.value }))}
-                        onKeyDown={e => { if (e.key === "Enter") submitContact(); }}
-                        className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-[#667781] leading-snug px-1">
-                    🔒 Your details go only to our own team — never to brokers or third parties. Gharpayy promise.
-                  </p>
-                  <button type="button" onClick={submitContact}
-                    disabled={!data.name?.trim() || (data.phone || "").replace(/\D/g, "").length < 10}
-                    className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold disabled:opacity-60 flex items-center justify-center gap-2">
-                    Claim my ₹1,000 off <ArrowRight className="w-4 h-4" />
-                  </button>
-                </>
-              )}
+                    <SkipRow onSkip={() => advance()} />
+                  </>
+                )}
 
-              {/* ═══════ REVEAL ═══════ */}
-              {cur === "reveal" && (
-                <>
-                  <Bubble side="in" delay={0.05}>
-                    <p className="text-[15px] font-bold text-[#111B21] leading-snug">
-                      {elapsed > 0 && elapsed <= 45 ? "⚡ Speed bonus unlocked!" : "🎉 You're in!"}
-                    </p>
-                    <p className="text-[13px] text-[#111B21] leading-snug mt-1">
-                      Hi <b>{data.name || "there"}</b> — we have everything we need.
-                    </p>
-                  </Bubble>
-
-                  {/* Coupon card */}
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="rounded-2xl p-4 text-center text-white shadow-lg"
-                    style={{ background: "linear-gradient(135deg, #1F47BA, #0A1A3D)" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#FFC72C] mb-1.5">
-                      {elapsed > 0 && elapsed <= 45 ? "Speed bonus — you earned it!" : "Your exclusive coupon"}
-                    </p>
-                    <p className="text-[36px] font-black tracking-[5px] text-[#FFC72C] my-1" style={{ fontFamily: "var(--font-display)" }}>{COUPON}</p>
-                    <p className="text-[12px] text-white/85 leading-relaxed">
-                      ₹1,000 off your first month's rent
-                      {elapsed > 0 && elapsed <= 45 && (
-                        <><br /><span className="text-[#FFC72C] font-semibold">Filled in {elapsed}s — genuinely impressive</span></>
-                      )}
-                      <br />Valid 30 days · share when you book
-                    </p>
-                  </motion.div>
-
-                  {/* WhatsApp send card */}
-                  <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] flex items-center justify-center flex-shrink-0 shadow">
-                        <MessageCircle className="w-5 h-5 text-white" />
+                {/* MULTI */}
+                {STEPS[cur].type === "multi" && (
+                  <>
+                    <Bubble side="in" delay={0.05}>
+                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
+                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
+                    </Bubble>
+                    <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {((STEPS[cur] as any).opts as string[]).map(o => {
+                          const arr = ((data as any)[(STEPS[cur] as any).key] as string[]) || [];
+                          const on = arr.includes(o);
+                          const max = (STEPS[cur] as any).max as number;
+                          const disabled = !on && arr.length >= max;
+                          return (
+                            <button key={o} type="button"
+                              disabled={disabled}
+                              onClick={() => toggleMulti((STEPS[cur] as any).key, o, max)}
+                              className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : disabled ? "bg-black/5 text-black/30 border-transparent cursor-not-allowed" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                              {on && "✓ "}{o}
+                            </button>
+                          );
+                        })}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781]">Send your lead summary to</p>
-                        <p className="font-bold text-[#111B21] text-[15px] leading-tight">Gharpayy team</p>
-                        <p className="text-[12px] text-[#25D366] font-semibold leading-tight">{GHARPAYY_WA_DISPLAY}</p>
-                      </div>
+                      <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
+                        {(((data as any)[(STEPS[cur] as any).key] as string[]) || []).length} of {(STEPS[cur] as any).max} selected
+                      </p>
                     </div>
-
-                    <a href={gharpayyUrl} target="_blank" rel="noopener noreferrer"
-                       className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold flex items-center justify-center gap-2">
-                      <Send className="w-4 h-4" /> Send to WhatsApp
-                    </a>
-
-                    <button type="button" onClick={copy}
-                      className="w-full py-2.5 rounded-full text-[13px] font-semibold text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center gap-2">
-                      <Copy className="w-3.5 h-3.5" /> {copied ? "Copied ✓" : "Copy lead summary"}
-                    </button>
-
-                    {!showCustom ? (
-                      <button type="button" onClick={() => setShowCustom(true)}
-                        className="w-full text-[12px] text-[#667781] hover:text-[#25D366] py-1 transition-colors">
-                        Send to a different WhatsApp number →
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => advance()}
+                        className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
+                        Skip
                       </button>
-                    ) : (
-                      <div className="pt-2 border-t border-black/5 space-y-2">
-                        <input type="tel" inputMode="numeric"
-                          placeholder="Enter WhatsApp number (10 digits)"
-                          value={customNum}
-                          onChange={e => setCustomNum(e.target.value)}
-                          className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                        {customUrl ? (
-                          <a href={customUrl} target="_blank" rel="noopener noreferrer"
-                             className="w-full py-2.5 rounded-full text-[13px] font-bold text-white bg-[#25D366] hover:bg-[#1ebe5a] flex items-center justify-center gap-2">
-                            <Send className="w-3.5 h-3.5" /> Send to +{customDigits.length === 10 ? "91" + customDigits : customDigits}
-                          </a>
-                        ) : (
-                          <p className="text-[11px] text-[#667781] text-center">Enter at least 10 digits</p>
-                        )}
+                      <ContinueBtn
+                        disabled={!(STEPS[cur] as any).optional && (((data as any)[(STEPS[cur] as any).key] as string[]) || []).length === 0}
+                        onClick={() => advance()}
+                        className="flex-1"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* CONTACT */}
+                {STEPS[cur].type === "contact" && (
+                  <>
+                    <Bubble side="in" delay={0.05}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-[#E5A800]" />
+                        <p className="text-[11px] font-bold text-[#5A3A00] uppercase tracking-wider">Last step — your ₹1,000 is almost yours</p>
                       </div>
-                    )}
-                  </div>
+                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as any).q}</p>
+                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as any).qs}</p>
+                    </Bubble>
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 space-y-3">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-[#667781] block mb-1.5">Your name</label>
+                        <input ref={inputRef} type="text" placeholder="What should we call you?"
+                          value={data.name || ""}
+                          onChange={e => setData(d => ({ ...d, name: e.target.value }))}
+                          className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-[#667781] block mb-1.5">WhatsApp number</label>
+                        <input type="tel" placeholder="10-digit mobile" inputMode="numeric"
+                          value={data.phone || ""}
+                          onChange={e => setData(d => ({ ...d, phone: e.target.value }))}
+                          onKeyDown={e => { if (e.key === "Enter") submitContact(); }}
+                          className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-[#667781] leading-snug px-1 flex items-start gap-1.5">
+                      <Lock className="w-3 h-3 text-[#25D366] mt-0.5 flex-shrink-0" />
+                      Your details go only to our own team — never to brokers or third parties. Gharpayy promise.
+                    </p>
+                    <button type="button" onClick={submitContact}
+                      disabled={!data.name?.trim() || (data.phone || "").replace(/\D/g, "").length < 10}
+                      className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold disabled:opacity-60 flex items-center justify-center gap-2">
+                      Claim my ₹1,000 off <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
 
-                  {/* What happens next timeline */}
-                  <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-2.5">What happens next</p>
-                    <div className="space-y-2.5">
-                      {[
-                        { icon: <Zap className="w-3.5 h-3.5" />, t: "Within 2 min", d: "Aayushi sees your lead on WhatsApp" },
-                        { icon: <Phone className="w-3.5 h-3.5" />, t: "Within 30 min", d: `Personal call to ${data.phone || "you"}` },
-                        { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "3–5 verified rooms matched to your profile" },
-                        { icon: <Check className="w-3.5 h-3.5" />, t: "Within 48h", d: "Property visit (if you want one) — zero pressure" },
-                      ].map((s, i) => (
-                        <div key={i} className="flex items-start gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#25D366]/15 text-[#128C7E] flex items-center justify-center flex-shrink-0 mt-0.5">{s.icon}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold text-[#111B21] leading-tight">{s.t}</p>
-                            <p className="text-[11.5px] text-[#667781] leading-snug mt-0.5">{s.d}</p>
+                {/* REVEAL */}
+                {cur === "reveal" && (
+                  <>
+                    <Bubble side="in" delay={0.05}>
+                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">
+                        {elapsed > 0 && elapsed <= 45 ? "⚡ Speed bonus unlocked!" : "🎉 You're in!"}
+                      </p>
+                      <p className="text-[13px] text-[#111B21] leading-snug mt-1">
+                        Hi <b>{data.name || "there"}</b> — we have everything we need.
+                      </p>
+                    </Bubble>
+
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                      className="rounded-2xl p-4 text-center text-white shadow-lg"
+                      style={{ background: "linear-gradient(135deg, #1F47BA, #0A1A3D)" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#FFC72C] mb-1.5">
+                        {elapsed > 0 && elapsed <= 45 ? "Speed bonus — you earned it!" : "Your exclusive coupon"}
+                      </p>
+                      <p className="text-[36px] font-black tracking-[5px] text-[#FFC72C] my-1" style={{ fontFamily: "var(--font-display)" }}>{COUPON}</p>
+                      <p className="text-[12px] text-white/85 leading-relaxed">
+                        ₹1,000 off your first month's rent
+                        {elapsed > 0 && elapsed <= 45 && (
+                          <><br /><span className="text-[#FFC72C] font-semibold">Filled in {elapsed}s — genuinely impressive</span></>
+                        )}
+                        <br />Valid 30 days · share when you book
+                      </p>
+                    </motion.div>
+
+                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] flex items-center justify-center flex-shrink-0 shadow">
+                          <MessageCircle className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781]">Send your lead summary to</p>
+                          <p className="font-bold text-[#111B21] text-[15px] leading-tight">Gharpayy team</p>
+                          <p className="text-[12px] text-[#25D366] font-semibold leading-tight">{GHARPAYY_WA_DISPLAY}</p>
+                        </div>
+                      </div>
+
+                      <a href={gharpayyUrl} target="_blank" rel="noopener noreferrer"
+                         className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold flex items-center justify-center gap-2">
+                        <Send className="w-4 h-4" /> Send to WhatsApp
+                      </a>
+
+                      <button type="button" onClick={copy}
+                        className="w-full py-2.5 rounded-full text-[13px] font-semibold text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center gap-2">
+                        <Copy className="w-3.5 h-3.5" /> {copied ? "Copied ✓" : "Copy lead summary"}
+                      </button>
+
+                      {!showCustom ? (
+                        <button type="button" onClick={() => setShowCustom(true)}
+                          className="w-full text-[12px] text-[#667781] hover:text-[#25D366] py-1 transition-colors">
+                          Send to a different WhatsApp number →
+                        </button>
+                      ) : (
+                        <div className="pt-2 border-t border-black/5 space-y-2">
+                          <input type="tel" inputMode="numeric"
+                            placeholder="Enter WhatsApp number (10 digits)"
+                            value={customNum}
+                            onChange={e => setCustomNum(e.target.value)}
+                            className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                          {customUrl ? (
+                            <a href={customUrl} target="_blank" rel="noopener noreferrer"
+                               className="w-full py-2.5 rounded-full text-[13px] font-bold text-white bg-[#25D366] hover:bg-[#1ebe5a] flex items-center justify-center gap-2">
+                              <Send className="w-3.5 h-3.5" /> Send to +{customDigits.length === 10 ? "91" + customDigits : customDigits}
+                            </a>
+                          ) : (
+                            <p className="text-[11px] text-[#667781] text-center">Enter at least 10 digits</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-2.5">What happens next</p>
+                      <div className="space-y-2.5">
+                        {[
+                          { icon: <Zap className="w-3.5 h-3.5" />, t: "Within 2 min", d: "Aayushi sees your lead on WhatsApp" },
+                          { icon: <Phone className="w-3.5 h-3.5" />, t: "Within 30 min", d: `Personal call to ${data.phone || "you"}` },
+                          { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "3–5 verified rooms matched to your profile" },
+                          { icon: <Check className="w-3.5 h-3.5" />, t: "Within 48h", d: "Property visit (if you want one) — zero pressure" },
+                        ].map((s, i) => (
+                          <div key={i} className="flex items-start gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-[#25D366]/15 text-[#128C7E] flex items-center justify-center flex-shrink-0 mt-0.5">{s.icon}</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-bold text-[#111B21] leading-tight">{s.t}</p>
+                              <p className="text-[11.5px] text-[#667781] leading-snug mt-0.5">{s.d}</p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Lead summary */}
-                  <details className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 group">
-                    <summary className="text-[12px] font-bold text-[#667781] uppercase tracking-wider cursor-pointer flex items-center justify-between">
-                      Full lead profile <span className="text-[#25D366] group-open:rotate-180 transition-transform">▾</span>
-                    </summary>
-                    <div className="mt-3 space-y-1.5">
-                      {summaryRows(data).map((r, i) => (
-                        <div key={i} className="flex gap-2 py-1.5 border-b border-black/5 last:border-0 text-[12px]">
-                          <span className="text-[#667781] min-w-[88px] flex-shrink-0">{r[0]}</span>
-                          <span className="text-[#111B21] font-medium flex-1">{r[1]}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
+                    <details className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 group">
+                      <summary className="text-[12px] font-bold text-[#667781] uppercase tracking-wider cursor-pointer flex items-center justify-between">
+                        Full lead profile <span className="text-[#25D366] group-open:rotate-180 transition-transform">▾</span>
+                      </summary>
+                      <div className="mt-3 space-y-1.5">
+                        {summaryRows(data).map((r, i) => (
+                          <div key={i} className="flex gap-2 py-1.5 border-b border-black/5 last:border-0 text-[12px]">
+                            <span className="text-[#667781] min-w-[88px] flex-shrink-0">{r[0]}</span>
+                            <span className="text-[#111B21] font-medium flex-1">{r[1]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
 
-                  <button type="button" onClick={restart}
-                    className="text-[12px] text-[#667781] hover:text-[#25D366] py-2 flex items-center justify-center gap-1.5 transition-colors">
-                    <RotateCcw className="w-3 h-3" /> Start a new lead
-                  </button>
-                </>
-              )}
+                    <button type="button" onClick={restart}
+                      className="text-[12px] text-[#667781] hover:text-[#25D366] py-2 flex items-center justify-center gap-1.5 transition-colors">
+                      <RotateCcw className="w-3 h-3" /> Start a new lead
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
 
-            </motion.div>
-          </AnimatePresence>
+            <div ref={bottomRef} className="h-2" />
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── HistoryStep: replays a completed Q+A as static bubbles ──────────
+function HistoryStep({ step, data }: { step: StepId; data: Data }) {
+  const s = STEPS[step];
+  const echo = echoFor(step, data);
+  const insight = insightFor(step, data);
+
+  // Welcome's "question" lives in the welcome screen — render only the user echo
+  if (step === "welcome") {
+    return echo ? <Bubble side="out"><p className="text-[13px] text-[#111B21] leading-snug">{echo}</p></Bubble> : null;
+  }
+
+  return (
+    <>
+      {s && s.type !== "reveal" && s.type !== "welcome" && "q" in s && (
+        <Bubble side="in">
+          <p className="text-[13.5px] text-[#111B21] leading-snug">{(s as any).q}</p>
+        </Bubble>
+      )}
+      {echo && (
+        <Bubble side="out">
+          <p className="text-[13px] text-[#111B21] leading-snug">{echo}</p>
+        </Bubble>
+      )}
+      {insight && (
+        <Bubble side="in">
+          <p className="text-[12.5px] text-[#5A3A00] leading-snug flex items-start gap-1.5">
+            <span className="opacity-70">💡</span>
+            <span>{insight}</span>
+          </p>
+        </Bubble>
+      )}
+    </>
   );
 }
 
@@ -843,7 +919,7 @@ function Bubble({ side, children, delay = 0 }: { side: "in" | "out"; children: R
     <motion.div
       initial={{ opacity: 0, y: 6, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ delay, duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
       className={`max-w-[88%] px-3.5 py-2.5 ${side === "in" ? "bubble-in self-start ml-1" : "bubble-out self-end mr-1"}`}>
       {children}
     </motion.div>
@@ -859,44 +935,12 @@ function ContinueBtn({ onClick, disabled, className = "" }: { onClick: () => voi
   );
 }
 
-// Echo the user's last answer as an out-bubble (chat continuity)
-function UserEcho({ prev, data }: { prev?: StepId; data: Data }) {
-  if (!prev) return null;
-  const s = STEPS[prev];
-  let label: string | null = null;
-  if (prev === "welcome" && data.intent) label = L_INTENT[data.intent];
-  else if (s && (s.type === "choice")) {
-    const v = (data as any)[s.key];
-    const opt = s.opts.find(o => o.v === v);
-    if (opt) label = `${opt.e} ${opt.t}`;
-  } else if (s && s.type === "text") {
-    label = (data as any)[s.key];
-  } else if (s && s.type === "budget") {
-    const b = BUDGETS.find(x => x.v === data.budget); if (b) label = `💰 ${b.r}`;
-  } else if (s && s.type === "multi") {
-    const arr = (data as any)[s.key] as string[] | undefined;
-    if (arr?.length) label = arr.map(x => `✓ ${x}`).join("  ");
-  }
-  if (!label) return null;
+function SkipRow({ onSkip }: { onSkip: () => void }) {
   return (
-    <Bubble side="out">
-      <p className="text-[13px] text-[#111B21] leading-snug">{label}</p>
-    </Bubble>
-  );
-}
-
-// Inline insight bubble per step
-function ContextInsight(cur: StepId, data: Data) {
-  let text: string | null = null;
-  if (cur === "in_blr" || cur === "curr_stay" || cur === "arrival") text = data.story ? STORY_INSIGHT[data.story] : null;
-  if (!text) return null;
-  return (
-    <Bubble side="in" delay={0.1}>
-      <div className="flex items-start gap-2">
-        <span className="text-base">💡</span>
-        <p className="text-[12.5px] text-[#5A3A00] leading-snug">{text}</p>
-      </div>
-    </Bubble>
+    <button type="button" onClick={onSkip}
+      className="self-center text-[11.5px] text-[#667781] hover:text-[#25D366] py-1.5 px-3 rounded-full transition-colors">
+      Rather not say — skip →
+    </button>
   );
 }
 
