@@ -1223,8 +1223,8 @@ function ChoiceBlock({
               transition={{ delay: 0.1 + i * 0.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => onPick(o.v)}
-              className={`w-full flex items-center gap-3 rounded-2xl p-3 text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
-              <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>
+              className={`w-full flex items-center gap-3 rounded-2xl p-3 min-h-[56px] text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
+              {o.e && <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
                 <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
@@ -1236,7 +1236,8 @@ function ChoiceBlock({
           );
         })}
       </div>
-      <SkipRow onSkip={onSkip} />
+      {step.optional && <SkipRow onSkip={onSkip} />}
+    </>
     </>
   );
 }
