@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, Lightbulb, Zap, Lock, Copy, Check } from "lucide-react";
+import { HeaderTicker } from "@/components/header-ticker";
 import type { Lang } from "@/lib/i18n";
 
 export function ChatHeader({
