@@ -1238,7 +1238,6 @@ function ChoiceBlock({
       </div>
       {step.optional && <SkipRow onSkip={onSkip} />}
     </>
-    </>
   );
 }
 
