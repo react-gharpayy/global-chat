@@ -445,6 +445,8 @@ export default function GharpayyForm() {
   const [customNum, setCustomNum] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -455,12 +457,20 @@ export default function GharpayyForm() {
     return () => clearInterval(id);
   }, [tStart, cur]);
 
+  // Aayushi "typing" before each new question
+  useEffect(() => {
+    if (cur === "welcome" || cur === "reveal") { setTyping(false); return; }
+    setTyping(true);
+    const t = setTimeout(() => setTyping(false), 700);
+    return () => clearTimeout(t);
+  }, [cur]);
+
   useEffect(() => {
     const s = STEPS[cur];
     if (s.type === "text" || s.type === "contact" || s.type === "name") {
-      setTimeout(() => inputRef.current?.focus(), 80);
+      setTimeout(() => inputRef.current?.focus(), 800);
     }
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 80);
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 800);
   }, [cur, history.length]);
 
   void now;
