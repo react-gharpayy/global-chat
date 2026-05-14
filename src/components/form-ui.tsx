@@ -27,17 +27,20 @@ export function ChatHeader({
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
       ) : <div className="w-2" />}
-      <div className="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center text-[#075E54] font-black text-sm shadow ring-1 ring-white/20">G</div>
+      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-white to-emerald-50 flex items-center justify-center shadow ring-1 ring-white/30 relative overflow-hidden">
+        <span className="text-[#075E54] font-black text-[15px] tracking-tight" style={{ fontFamily: "var(--font-display)" }}>G</span>
+        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#25D366] ring-2 ring-[#075E54]" />
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-[15px] font-semibold text-white leading-tight truncate flex items-center gap-1.5">
-          Gharpayy EIE
+          Gharpayy expert
           <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/15 text-[9px] font-bold tracking-wider">
             <Lock className="w-2.5 h-2.5" /> PRIVATE
           </span>
         </p>
         <p className="text-[11px] text-emerald-200 leading-tight truncate flex items-center gap-1">
           <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-          {subtitle ?? "Easy-In · Easy-Stay · replies in minutes"}
+          {subtitle ?? "Online now · usually replies in minutes"}
         </p>
       </div>
       <button
