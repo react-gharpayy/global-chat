@@ -43,10 +43,12 @@ export function ChatHeader({
             <Lock className="w-2.5 h-2.5" /> PRIVATE
           </span>
         </p>
-        <p className="text-[11px] text-emerald-200 leading-tight truncate flex items-center gap-1">
-          <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-          {subtitle ?? "Online now · usually replies in minutes"}
-        </p>
+        {showTicker
+          ? <HeaderTicker zone={zone} />
+          : <p className="text-[11px] text-emerald-200 leading-tight truncate flex items-center gap-1">
+              <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300" />
+              {subtitle ?? "Online now · usually replies in minutes"}
+            </p>}
       </div>
       <button
         type="button"
