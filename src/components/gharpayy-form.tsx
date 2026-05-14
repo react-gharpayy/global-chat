@@ -1038,20 +1038,29 @@ export default function GharpayyForm() {
                       <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as Extract<Step, { type: "contact" }>).q}</p>
                       <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as Extract<Step, { type: "contact" }>).qs}</p>
                     </Bubble>
+                    <p className="text-[11px] text-[#667781] leading-snug px-1 flex items-start gap-1.5">
+                      <Lock className="w-3 h-3 text-[#25D366] mt-0.5 flex-shrink-0" />
+                      Goes only to our internal team. Never to brokers, never sold.
+                    </p>
                     <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 space-y-3">
                       <div>
                         <label className="text-[10px] font-bold uppercase tracking-wider text-[#667781] block mb-1.5">WhatsApp number</label>
-                        <input ref={inputRef} type="tel" placeholder="10-digit mobile" inputMode="numeric"
-                          value={data.phone || ""}
-                          onChange={e => setData(d => ({ ...d, phone: e.target.value }))}
-                          onKeyDown={e => { if (e.key === "Enter") submitContact(); }}
-                          className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                        <div className="flex items-center gap-2 bg-[#F0F2F5] rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-[#25D366]/30">
+                          <span className="text-[14px] text-[#667781] font-semibold">+91</span>
+                          <input ref={inputRef} type="tel" placeholder="98765 43210" inputMode="numeric"
+                            value={(() => {
+                              const d = (data.phone || "").replace(/\D/g, "").replace(/^91/, "").slice(0, 10);
+                              return d.length > 5 ? `${d.slice(0,5)} ${d.slice(5)}` : d;
+                            })()}
+                            onChange={e => {
+                              const digits = e.target.value.replace(/\D/g, "").replace(/^91/, "").slice(0, 10);
+                              setData(d => ({ ...d, phone: digits }));
+                            }}
+                            onKeyDown={e => { if (e.key === "Enter") submitContact(); }}
+                            className="flex-1 bg-transparent text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+                        </div>
                       </div>
                     </div>
-                    <p className="text-[11px] text-[#667781] leading-snug px-1 flex items-start gap-1.5">
-                      <Lock className="w-3 h-3 text-[#25D366] mt-0.5 flex-shrink-0" />
-                      Your number goes only to our internal team. Never to brokers, never sold.
-                    </p>
                     <button type="button" onClick={submitContact}
                       disabled={(data.phone || "").replace(/\D/g, "").length < 10}
                       className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold disabled:opacity-60 flex items-center justify-center gap-2">
@@ -1065,14 +1074,19 @@ export default function GharpayyForm() {
                   <>
                     <Bubble side="in" delay={0.05}>
                       <p className="text-[15px] font-bold text-[#111B21] leading-snug">
-                        Got it{data.name ? `, ${data.name}` : ""} 🙌
+                        Got it{data.name ? `, ${data.name}` : ""}.
                       </p>
                       <p className="text-[13px] text-[#111B21] leading-snug mt-1">
                         You're #{1 + (matchedToday(data.zone) % 4)} in Aayushi's queue. We have everything we need to start.
                       </p>
                     </Bubble>
 
-                    <MatchPreview zone={data.zone} name={data.name} />
+                    {autoCopied !== null && (
+                      <div className={`self-center max-w-[94%] px-3 py-2 rounded-full text-[11.5px] font-semibold flex items-center gap-1.5 ${autoCopied ? "bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30" : "bg-amber-50 text-amber-800 border border-amber-200"}`}>
+                        <Copy className="w-3 h-3" />
+                        {autoCopied ? "Brief auto-copied — paste anywhere ✓" : "Tap copy below to grab your brief"}
+                      </div>
+                    )}
 
                     <MovePlanCard
                       name={data.name}
@@ -1103,8 +1117,9 @@ export default function GharpayyForm() {
                       </a>
 
                       <button type="button" onClick={copy}
+                        title={autoCopied ? "Already on your clipboard" : ""}
                         className="w-full py-2.5 rounded-full text-[13px] font-semibold text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center gap-2">
-                        <Copy className="w-3.5 h-3.5" /> {copied ? "Copied ✓" : "Copy my brief"}
+                        <Copy className="w-3.5 h-3.5" /> {copied ? (autoCopied ? "Copy again" : "Copied ✓") : "Copy my brief"}
                       </button>
 
                       {!showCustom ? (
