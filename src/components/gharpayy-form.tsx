@@ -421,14 +421,7 @@ const L_VISIT_WHEN: Record<string,string> = { today:"Today/tomorrow", thisweek:"
 const L_RADIUS: Record<string,string> = { walk:"Walking (~1 km)", short:"Short ride (1-3 km)", "5km":"Up to 5 km", "10km":"Up to 10 km", any:"Anywhere in zone" };
 const L_FOOD: Record<string,string> = { included:"Food included", extra:"Food extra is fine" };
 
-function exactBudgetLabel(d: Data): string | undefined {
-  const v = d.budget_exact === "custom" ? d.food_pref && "" : d.budget_exact;
-  const num = d.budget_exact === "custom" ? "" : d.budget_exact;
-  if (d.budget_exact === "flex") return "Flexible inside tier";
-  if (d.budget_exact === "custom") return undefined;
-  return num ? `ceiling ${fmtINR(num)}/mo` : undefined;
-  void v;
-}
+
 
 function buildMsg(d: Data, elapsed: number): string {
   const lines: string[] = [];
