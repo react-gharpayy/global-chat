@@ -1,10 +1,6 @@
 import { motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Lightbulb } from "lucide-react";
 import type { Lang } from "@/lib/i18n";
-
-export function Orb(_: { className: string; color: string }) {
-  return null;
-}
 
 export function ChatHeader({ onBack, subtitle }: { onBack?: () => void; subtitle?: string }) {
   return (
@@ -14,12 +10,15 @@ export function ChatHeader({ onBack, subtitle }: { onBack?: () => void; subtitle
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
       ) : <div className="w-2" />}
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-sm shadow">G</div>
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFD451] to-[#E5A800] flex items-center justify-center text-[#0A1A3D] font-black text-sm shadow ring-2 ring-white/10">G</div>
       <div className="flex-1 min-w-0">
         <p className="text-[15px] font-semibold text-white leading-tight truncate">Gharpayy</p>
-        <p className="text-[11px] text-white/75 leading-tight truncate">{subtitle ?? "online"}</p>
+        <p className="text-[11px] text-emerald-200 leading-tight truncate flex items-center gap-1">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          {subtitle ?? "online · typing…"}
+        </p>
       </div>
-      <div className="flex items-center gap-4 text-white/90">
+      <div className="flex items-center gap-3 text-white/85">
         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M15.5 5h-.79l-.28-.27A6.47 6.47 0 0 0 9.5 3 6.5 6.5 0 1 0 16 9.5c0-1.61-.59-3.09-1.55-4.23l.27-.27v-.79l5 4.99L20 11l-4.5-4.5z"/></svg>
         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -33,11 +32,11 @@ export function BackBar({ step, onBack, progress, total }: {
 }) {
   return (
     <>
-      <ChatHeader onBack={onBack} subtitle={`Step ${step} of ${total}`} />
-      <div className="h-0.5 bg-black/5">
-        <motion.div className="h-full bg-[#25D366]"
+      <ChatHeader onBack={onBack} subtitle={`Step ${step} of ${total} · 30s left`} />
+      <div className="h-1 bg-black/5 relative">
+        <motion.div className="h-full bg-gradient-to-r from-[#25D366] to-[#128C7E]"
           initial={{ width: 0 }} animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.4, ease: "easeOut" }} />
+          transition={{ duration: 0.5, ease: "easeOut" }} />
       </div>
     </>
   );
@@ -48,7 +47,7 @@ export function NextBtn({ onClick, label, disabled = false }: {
 }) {
   return (
     <button type={onClick ? "button" : "submit"} onClick={onClick} disabled={disabled}
-      className="w-full h-12 flex items-center justify-center gap-2 rounded-full text-sm font-bold btn-gold disabled:opacity-60 transition-all">
+      className="w-full h-13 py-3.5 flex items-center justify-center gap-2 rounded-full text-[15px] font-bold btn-gold disabled:opacity-60">
       {disabled && <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />}
       {label}
     </button>
@@ -69,11 +68,27 @@ export function Sub({ children }: { children: React.ReactNode }) {
 
 export function StepTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="bubble-in inline-block max-w-[88%] px-3.5 py-2.5 mb-4 ml-1">
-      {eyebrow && <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#25D366]">{eyebrow}</p>}
+    <div className="bubble-in inline-block max-w-[88%] px-3.5 py-2.5 mb-4 ml-1 bubble-pop">
+      {eyebrow && <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#1F47BA]">{eyebrow}</p>}
       <p className="text-[15px] font-semibold text-[#111B21] leading-snug whitespace-pre-line">{title}</p>
       <p className="text-[10px] text-[#667781] text-right mt-0.5">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
     </div>
+  );
+}
+
+/* BLR Insight chat bubble — adds value between steps */
+export function InsightBubble({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, type: "spring", stiffness: 280, damping: 22 }}
+      className="bubble-insight inline-block max-w-[92%] px-3 py-2 mb-3 ml-1">
+      <div className="flex items-start gap-2">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+        <div className="text-[12px] leading-snug font-medium">{children}</div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -90,26 +105,35 @@ export function Toggle({ value, onChange }: { value: boolean; onChange: (v: bool
 }
 
 export function PillGroup({ options, value, onChange, cols = 2 }: {
-  options: { id: string; label: string; sub?: string }[];
+  options: { id: string; label: string; sub?: string; icon?: React.ReactNode }[];
   value: string | undefined;
   onChange: (v: string) => void;
   cols?: 2 | 3;
 }) {
   return (
-    <div className={`grid gap-2 ${cols === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+    <div className={`grid gap-2.5 ${cols === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
       {options.map(o => {
         const active = value === o.id;
         return (
-          <button key={o.id} type="button" onClick={() => onChange(o.id)}
-            className="rounded-2xl px-3 py-2.5 text-left transition-all"
+          <motion.button
+            key={o.id}
+            type="button"
+            onClick={() => onChange(o.id)}
+            whileTap={{ scale: 0.96 }}
+            className="rounded-2xl px-3 py-3 text-left transition-all relative overflow-hidden"
             style={{
-              background: active ? "#DCF8C6" : "#FFFFFF",
-              border: `1px solid ${active ? "#25D366" : "rgba(15,23,42,0.08)"}`,
-              boxShadow: active ? "0 2px 8px rgba(37,211,102,0.18)" : "0 1px 0.5px rgba(11,20,26,0.08)",
+              background: active
+                ? "linear-gradient(135deg, #DCF8C6, #B7E8A1)"
+                : "#FFFFFF",
+              border: `1.5px solid ${active ? "#25D366" : "rgba(15,23,42,0.08)"}`,
+              boxShadow: active
+                ? "0 4px 14px rgba(37,211,102,0.25), 0 0 0 3px rgba(37,211,102,0.12)"
+                : "0 1px 0.5px rgba(11,20,26,0.08)",
             }}>
-            <span className="block text-[13px] font-semibold" style={{ color: "#111B21" }}>{o.label}</span>
+            {o.icon && <div className="mb-1">{o.icon}</div>}
+            <span className="block text-[13px] font-semibold text-[#111B21]">{o.label}</span>
             {o.sub && <span className="block text-[11px] mt-0.5 text-[#667781]">{o.sub}</span>}
-          </button>
+          </motion.button>
         );
       })}
     </div>
@@ -157,11 +181,11 @@ export function BudgetSlider({ min, max, onChange }: {
 }
 
 export function Confetti() {
-  const pieces = Array.from({ length: 30 }, (_, i) => ({
+  const pieces = Array.from({ length: 40 }, (_, i) => ({
     id: i,
-    color: ["#25D366","#128C7E","#34B7F1","#DCF8C6","#075E54","#ECE5DD"][i % 6],
-    left: `${(i / 30) * 100}%`,
-    delay: i * 0.06,
+    color: ["#25D366","#128C7E","#1F47BA","#FFC72C","#DCF8C6","#FFD451"][i % 6],
+    left: `${(i / 40) * 100}%`,
+    delay: i * 0.05,
     duration: 2.4 + (i % 5) * 0.3,
     size: 6 + (i % 6),
   }));
