@@ -1,10 +1,14 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowRight, Check, ChevronDown, Sparkles, Gift, Phone, Shield, Star, Zap,
+  ArrowRight, Check, ChevronDown, Sparkles, Phone, Shield, Star, Zap,
   Utensils, Laptop, Moon, Car, AlertCircle, Clock,
   TrendingDown, Home as HomeIcon, Plane, Globe,
+  MessageCircle, Headphones, Key, CalendarCheck,
 } from "lucide-react";
+
+// 👉 Replace with Gharpayy's official WhatsApp number (digits only, with country code, no '+')
+const GHARPAYY_WHATSAPP = "919876543210";
 import { type Lang, langLabels, t, getAmenityKeys } from "@/lib/i18n";
 import {
   ChatHeader, BackBar, NextBtn, GlassCard, FieldLabel, Sub, StepTitle,
