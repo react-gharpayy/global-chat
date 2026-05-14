@@ -39,7 +39,7 @@ type Data = {
   intent?: string; story?: string; in_blr?: string; curr_stay?: string;
   notice?: string; arrival?: string; movein?: string;
   zone?: string; areas?: string[]; area_other?: string; radius?: string; special_req?: string;
-  workplace?: string; budget?: string; budget_exact?: string; food_pref?: string;
+  workplace?: string; budget?: string; budget_exact?: string; budget_exact_custom?: string; food_pref?: string;
   room?: string; gender?: string;
   name?: string; matters?: string[]; matters_other?: string;
   dealbreakers?: string[]; worry?: string;
