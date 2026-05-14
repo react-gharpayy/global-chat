@@ -965,6 +965,7 @@ export default function GharpayyForm() {
                 )}
               </motion.div>
             </AnimatePresence>
+            )}
 
             <div ref={bottomRef} className="h-2" />
           </div>
