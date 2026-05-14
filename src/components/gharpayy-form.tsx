@@ -2,9 +2,15 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, Phone, Home as HomeIcon,
-  MessageCircle, Send, Zap, Copy, RotateCcw, Lock,
+  MessageCircle, Send, Zap, Copy, RotateCcw, Lock, Users, Sparkles,
 } from "lucide-react";
 import { ChatHeader } from "@/components/form-ui";
+import { TypingDots, ReadTick } from "@/components/typing-dots";
+import { TrustRing } from "@/components/trust-ring";
+import { MatchPreview } from "@/components/match-preview";
+import { MovePlanCard } from "@/components/move-plan-card";
+import { matchedToday, tierPopularity, visitsBookedToday } from "@/lib/proof-seed";
+import { tap, success } from "@/lib/haptics";
 
 // ─── Gharpayy official WhatsApp ──────────────────────────────────────
 const GHARPAYY_WA = "917988114576";
