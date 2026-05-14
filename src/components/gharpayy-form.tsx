@@ -19,7 +19,9 @@ const GHARPAYY_WA_DISPLAY = "+91 79881 14576";
 // ─── Types ───────────────────────────────────────────────────────────
 type StepId =
   | "welcome" | "story" | "in_blr" | "curr_stay" | "notice"
-  | "arrival" | "movein" | "zone" | "workplace" | "budget"
+  | "arrival" | "movein"
+  | "zone" | "zone_areas" | "zone_radius" | "zone_special"
+  | "workplace" | "budget" | "budget_exact"
   | "room" | "gender" | "name" | "matters" | "matters_other"
   | "dealbreakers" | "worry" | "visit" | "visit_when" | "contact" | "reveal";
 
