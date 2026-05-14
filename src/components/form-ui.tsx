@@ -1,28 +1,88 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Lightbulb } from "lucide-react";
+import { ChevronLeft, Lightbulb, Zap, Lock, Copy, Check } from "lucide-react";
 import type { Lang } from "@/lib/i18n";
 
-export function ChatHeader({ onBack, subtitle }: { onBack?: () => void; subtitle?: string }) {
+export function ChatHeader({
+  onBack,
+  subtitle,
+  waNumber,
+  waDisplay,
+}: {
+  onBack?: () => void;
+  subtitle?: string;
+  waNumber?: string;
+  waDisplay?: string;
+}) {
+  const [menu, setMenu] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    if (!waNumber) return;
+    try { await navigator.clipboard.writeText("+" + waNumber); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
+  };
   return (
-    <div className="wa-header px-3 py-2.5 flex items-center gap-3 sticky top-0 z-30 shadow-md">
+    <div className="wa-header px-3 py-2.5 flex items-center gap-3 sticky top-0 z-30 shadow-md relative">
       {onBack ? (
         <button type="button" onClick={onBack} className="w-8 h-8 flex items-center justify-center -ml-1 rounded-full hover:bg-white/10">
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
       ) : <div className="w-2" />}
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFD451] to-[#E5A800] flex items-center justify-center text-[#0A1A3D] font-black text-sm shadow ring-2 ring-white/10">G</div>
+      <div className="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center text-[#075E54] font-black text-sm shadow ring-1 ring-white/20">G</div>
       <div className="flex-1 min-w-0">
-        <p className="text-[15px] font-semibold text-white leading-tight truncate">Gharpayy</p>
+        <p className="text-[15px] font-semibold text-white leading-tight truncate flex items-center gap-1.5">
+          Gharpayy EIE
+          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/15 text-[9px] font-bold tracking-wider">
+            <Lock className="w-2.5 h-2.5" /> PRIVATE
+          </span>
+        </p>
         <p className="text-[11px] text-emerald-200 leading-tight truncate flex items-center gap-1">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          {subtitle ?? "online · typing…"}
+          <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300" />
+          {subtitle ?? "Easy-In · Easy-Stay · replies in minutes"}
         </p>
       </div>
-      <div className="flex items-center gap-3 text-white/85">
-        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M15.5 5h-.79l-.28-.27A6.47 6.47 0 0 0 9.5 3 6.5 6.5 0 1 0 16 9.5c0-1.61-.59-3.09-1.55-4.23l.27-.27v-.79l5 4.99L20 11l-4.5-4.5z"/></svg>
-        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+      <button
+        type="button"
+        onClick={() => setMenu(m => !m)}
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/90"
+        aria-label="Menu"
+      >
         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-      </div>
+      </button>
+      {menu && (
+        <>
+          <button type="button" onClick={() => setMenu(false)} className="fixed inset-0 z-40 cursor-default" aria-hidden />
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-2 top-[58px] z-50 w-[260px] rounded-xl bg-white shadow-xl border border-black/5 overflow-hidden"
+          >
+            <div className="px-3.5 py-3 border-b border-black/5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781]">Direct WhatsApp</p>
+              <p className="text-[15px] font-bold text-[#111B21] mt-0.5">{waDisplay ?? "—"}</p>
+              <p className="text-[11px] text-[#667781] mt-0.5">Aayushi · Gharpayy team</p>
+            </div>
+            <button type="button" onClick={copy} className="w-full px-3.5 py-2.5 flex items-center gap-2 text-[13px] font-medium text-[#111B21] hover:bg-black/5">
+              {copied ? <Check className="w-4 h-4 text-[#25D366]" /> : <Copy className="w-4 h-4 text-[#667781]" />}
+              {copied ? "Copied" : "Copy number"}
+            </button>
+            <a
+              href={waNumber ? `https://wa.me/${waNumber}` : "#"}
+              target="_blank" rel="noopener noreferrer"
+              className="w-full px-3.5 py-2.5 flex items-center gap-2 text-[13px] font-semibold text-[#128C7E] hover:bg-black/5 border-t border-black/5"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.413c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>
+              Open chat directly
+            </a>
+            <div className="px-3.5 py-2.5 border-t border-black/5 bg-[#FAFAF7] flex items-start gap-2">
+              <Lock className="w-3 h-3 text-[#25D366] mt-0.5 flex-shrink-0" />
+              <p className="text-[10.5px] text-[#667781] leading-snug">
+                Your details only ever go to our internal team. Never to brokers, never sold.
+              </p>
+            </div>
+          </motion.div>
+        </>
+      )}
     </div>
   );
 }
