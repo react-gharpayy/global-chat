@@ -9,11 +9,15 @@ export function ChatHeader({
   subtitle,
   waNumber,
   waDisplay,
+  zone,
+  showTicker = false,
 }: {
   onBack?: () => void;
   subtitle?: string;
   waNumber?: string;
   waDisplay?: string;
+  zone?: string;
+  showTicker?: boolean;
 }) {
   const [menu, setMenu] = useState(false);
   const [copied, setCopied] = useState(false);
