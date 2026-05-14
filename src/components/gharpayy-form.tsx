@@ -151,7 +151,7 @@ export default function GharpayyForm() {
 
   const amenityKeys = getAmenityKeys();
 
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+  const whatsappUrl = `https://wa.me/${GHARPAYY_WHATSAPP}?text=${encodeURIComponent(
     buildWhatsAppMessage({ ...data, name: nameVal, phone: phoneVal, email: emailVal }, lang, chips, budgetMin, budgetMax, fillTime)
   )}`;
 
