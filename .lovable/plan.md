@@ -1,118 +1,121 @@
-# 10x Plan — Gharpayy EIE Chat
 
-User picked everything, so this is one combined upgrade. No question/copy changes — only adding intelligence, realism, proof, persistence and a viral hook around the existing flow.
+# Reveal cleanup + 10x zone capture + exact budget + auto-copy
 
----
+Tightens the final screen, captures area + radius + exact budget so the expert never has to ask twice, auto-copies the brief, and prunes emoji noise. Every answer is designed to save the expert (and the user) one back-and-forth call.
 
-## 1. Smart Insights + AI Match Preview
-
-Make Aayushi feel like a Bangalore local who already started shortlisting.
-
-- **Dynamic insight bubbles** between steps, keyed off `(zone, work, budget, persona, must-haves)`:
-  - Area vibe: "Whitefield is mostly 24-30 yr old IT folks, lots of cafés on Graphite Lane, weekends quiet."
-  - Commute: "Bellandur → Prestige Tech Park = 12 min on a scooter, 35 min in cab at 9am."
-  - People: "Most of our Koramangala homes are foodies & startup folks, avg age 26."
-  - Lifestyle: "Manyata side has the best morning runs at Nagavara lake."
-  - Zero rent talk. Zero "₹X gets you Y" lines.
-- **AI match preview card** after they finish work + must-haves, BEFORE submit:
-  - 2-3 mock matches with neighborhood thumbnail (gradient card, blurred address), commute mins, vibe tags, "2 seats left" pill.
-  - Headline: "Aayushi already lined these up for you →"
-- Insights generated client-side from a typed `INSIGHTS_BANK` keyed by zone+persona (no backend needed for v1; can swap to Lovable AI later).
-
-## 2. Live Social Proof + Urgency
-
-Trust without being sleazy.
-
-- **Header ticker** (replaces static "Online now"): rotates every 4s — "Aayushi just replied to Riya · 38s ago", "12 matched today in Whitefield", "3 visits booked this morning".
-- **Inline proof bubbles** at key moments:
-  - After zone pick: "8 people from your zone matched this week."
-  - After budget pick: "Most popular tier in your zone — 60% pick this."
-- **Seats-left counter** on the AI match preview cards (real-feeling, capped 1-4).
-- **Trust ring** on submit: animated SVG ring filling as "Verifying… Matching… Locking your slot…".
-- All numbers from a deterministic seed (date + zone) so they look real and don't flicker.
-
-## 3. Conversational Realism
-
-Make it feel like WhatsApp, not a form.
-
-- **Typing indicator** (3 animated dots in a bubble) before every Aayushi message, 600-1100ms delay scaled to message length.
-- **Read receipts** (double blue tick) on user replies after 1.2s.
-- **Voice-note style intro bubble** at step 1: a fake waveform + "0:09" play button. Tap → plays a short pre-recorded greeting (file in `public/`, can be silent/placeholder for now). Visually unique, feels human.
-- **Emoji reactions**: long-press (or tap 💬 icon) on user bubbles to add ❤️/👍 — purely decorative but increases engagement perception.
-- **Smart message timing**: insight bubbles arrive 400ms after the step bubble, not simultaneously.
-
-## 4. Lead Capture Backend (Lovable Cloud)
-
-Stop losing leads. Currently nothing is saved.
-
-- Enable Lovable Cloud.
-- Table `leads`: id, created_at, zone, work_place, budget_tier, persona, must_haves[], name, phone, move_in, urgency, visit_or_prebook, visit_when, in_bangalore, time_to_complete_sec, utm fields, raw_payload jsonb.
-- Server function `submitLead` (createServerFn) — writes row, returns `{ leadId, queuePosition }`.
-- Submit flow: fire on final step, show real queue position ("You're #3 in Aayushi's queue") instead of fake.
-- Lightweight `/admin` route gated by a single env-based passcode (no full auth) — table view, CSV export, click-to-WhatsApp.
-- **Instant alert** via existing WhatsApp number: server fn pings `wa.me` deep-link payload to team Slack/webhook (placeholder env var `LEAD_WEBHOOK_URL`, easy to wire to Slack/Zapier later).
-
-## 5. Shareable "My Bangalore Move Plan" Card
-
-Viral loop — people screenshot and send to flatmates/parents.
-
-- After submit, generate a beautiful 9:16 card in-DOM (html2canvas):
-  - Gharpayy crest, user's first name, zone, move-in date, vibe tags, commute time, "Matched by Aayushi" badge.
-  - Gold/green gradient, Playfair display headline.
-- Two buttons: **Share on WhatsApp** (image + prefilled text) and **Save image**.
-- Web Share API where available, fallback to download + copy-text.
-
-## 6. Polish that ties it together
-
-- Replace static "30s left" with real countdown driven by avg time per step.
-- Subtle haptic feedback (`navigator.vibrate(8)`) on every selection (mobile only).
-- Send sound (8kb mp3) on user replies — toggle in 3-dot menu.
-- Confetti retuned: shorter, gold/green only, fires once on submit success.
-- Dark-mode WhatsApp accuracy pass on header + bubbles.
+Guiding rule for every button on the page: **one tap = one decision saved later**. No dead ends, no "back to start", no double-confirm modals, no required typing where a chip will do.
 
 ---
 
-## Technical layout
+## 1. Reveal screen — remove distraction, add auto-copy
+
+The final screen should feel like a receipt, not a marketplace.
+
+- In `src/components/gharpayy-form.tsx` reveal section: remove `<MatchPreview />`. Keep `MovePlanCard`, the WhatsApp send card, "what happens next" timeline, full brief accordion. (Leave `match-preview.tsx` in repo, unused.)
+- Add a `useEffect` that runs once when `cur === "reveal"`:
+  - `await navigator.clipboard.writeText(waMessage)` → `setCopied(true)` and show a green inline chip above the WhatsApp card: **"Brief auto-copied — paste anywhere ✓"**
+  - On failure (Safari permission, etc.) show: **"Tap copy to grab your brief"**
+- Existing "Copy my brief" button stays, relabels to **"Copy again"** once auto-copy succeeded. Tooltip: "Already on your clipboard."
+- Privacy line moves ABOVE the phone input on the `contact` step (currently below).
+
+## 2. The "every answer saves 20 minutes" rule — exact-budget after tier
+
+Today the user picks a tier (BASIC / CLASSIC / PRIVE / LUXE MAX). The expert still has to call to find the actual ceiling. Fix that in one extra tap.
+
+Add a new step `budget_exact` immediately after `budget`:
+
+- **Question**: "Cool — what's your real monthly ceiling inside {TIER}?"
+- **Subtitle**: "Honest number means we only show stays that fit. Saves the back-and-forth."
+- **Options** (chips, single-select, populated from the tier the user picked):
+  - BASIC → ₹7k · ₹8k · ₹9k · ₹10k · ₹11k · "Flexible inside this tier"
+  - CLASSIC → ₹12k · ₹13k · ₹14k · ₹15k · ₹16k · ₹17k · "Flexible inside this tier"
+  - PRIVE → ₹17k · ₹19k · ₹21k · ₹23k · ₹25k · ₹26k · "Flexible inside this tier"
+  - LUXE MAX → ₹25k · ₹30k · ₹35k · ₹40k · ₹45k · "Flexible inside this tier"
+- **Plus**: a "+ Set my own number" chip → reveals an inline numeric input (no separate screen). Stored as `budget_exact_custom`.
+- **Inclusive toggle row** below: two pill toggles — "Food included" / "Food extra is fine" — stored as `food_pref`. Default unselected; not blocking.
+- Single tap advances to `room`. Skip-able only via "Flexible inside this tier".
+
+Insight bubble after pick: "Locked at ₹{n}/mo · 12 stays in {zone} match this." (uses existing `proof-seed`).
+
+## 3. Expand the zone step — 4-stage mini-flow
+
+Today the zone step shows 5 belts with truncated subtitles and that's it. Restructure so location is captured properly in one place.
+
+### 3a. Stage 1 — Zone (5 belts, cleaner subtitles)
+East · ORR · North · Central · South — keep emoji off, subtitle is just the belt name.
+
+### 3b. Stage 2 — Areas / landmarks (multi-select chips, max 5, +Other)
+Each zone exposes a wide list so nothing important is missed:
+
+- **East**: Whitefield, Brookfield, Marathalli, Mahadevapura, ITPL, EPIP, Kundalahalli, Varthur, Hoodi, KR Puram, Phoenix Marketcity, Graphite Lane, AECS Layout
+- **ORR**: Bellandur, Sarjapur Road, Kadubeesanahalli, Devarabeesanahalli, RMZ Ecoworld, Embassy Tech Village, Prestige Tech Park, Cessna Business Park, HSR Layout, Outer Ring Road
+- **North**: Nagawara, Manyata Tech Park, Hebbal, Yeshwanthpur, Hennur, Thanisandra, Jakkur, Yelahanka, Sahakar Nagar, Airport corridor
+- **Central**: Koramangala, Indiranagar, Vasanth Nagar, MG Road, Domlur, Ulsoor, Richmond Road, Cunningham Road, Lavelle Road, Frazer Town, Shivajinagar
+- **South**: Electronic City Phase 1, Electronic City Phase 2, BTM Layout, JP Nagar, Jayanagar, Bommanahalli, Hosur Road, Bannerghatta Road, Kanakapura Road, Silk Board
+
+Plus a `+ Add another area` chip → inline text input (no new screen). Stored as `area_other`.
+
+### 3c. Stage 3 — Radius (single choice, default "Anywhere in zone")
+Walking (~1 km) · Short ride (1–3 km) · Up to 5 km · Up to 10 km · Anywhere in this zone
+
+### 3d. Stage 4 — Special requirement (optional one-liner)
+Placeholder: `e.g. near a metro stop, parking for car, vegetarian floor…`. Skippable. Stored as `special_req`.
+
+After Stage 4 → existing `workplace` step.
+
+### 3e. Data + brief
+Extend `Data` with `areas?: string[]`, `area_other?: string`, `radius?: string`, `special_req?: string`, `budget_exact?: string`, `budget_exact_custom?: string`, `food_pref?: string`.
+Update `buildMsg` and `summaryRows`:
+- *Areas:* comma-list of `areas` + `area_other`
+- *Radius:* label
+- *Budget:* `BASIC ₹7k–11k · ceiling ₹{n}/mo · {food_pref}`
+- *Special:* if present
+
+## 4. "Worthy & hassle-free" pass on every button
+
+Audit every interactive surface. Targets:
+
+- **Choice options**: full row tappable (already is), but increase tap target to `min-h-[56px]` and remove the tiny chevron — entire card is the action.
+- **Multi-select chips** (matters, dealbreakers, areas): show a live "X of Y · tap to confirm" pill at the bottom that doubles as the Continue button when `X > 0`. Removes the need to scroll for the separate Continue.
+- **Skip buttons**: only on truly optional steps (matters_other, dealbreakers, worry, special_req, area_other). Remove "Skip" from required steps (workplace text input keeps Skip because real-world users may not have an exact employer).
+- **Welcome intent buttons**: keep 4 options, but on tap show a 250ms "✓ Got it — {label}" inline confirmation before advancing. No modal.
+- **Phone input**: auto-format to `+91 XXXXX XXXXX`, paste-cleaning (strips `+91`/spaces). Submit button enabled the moment 10 digits are present, no separate validation message.
+- **Reveal CTAs ordering** (top-to-bottom): green "Send on WhatsApp" → "Copy again" → "Send to a different number" expand → "Start over" demoted to small text link at bottom.
+- **No dead-ends**: every non-final screen has Back (already present in header). The final screen never auto-redirects.
+- **No double prompts**: remove the "Are you sure?" implicit feel from Start over — it just resets without a confirm.
+
+## 5. Decrease emoji density
+
+Cut roughly in half.
+
+- **Option emojis** (`ChoiceOpt.e`): keep only on welcome intent and `gender`. Set `e: ""` for `story`, `in_blr`, `curr_stay`, `notice`, `arrival`, `movein`, `zone`, `budget`, `budget_exact`, `room`, `worry`, `visit`, `visit_when`. In `ChoiceBlock`, render the emoji span only when `o.e` is non-empty.
+- **proofFor()**: drop the leading `📊 / 🔥 / 🚪`. Wording stays.
+- **buildMsg**: keep section emojis only for `Name`, `Phone`, `Zone`, `Budget`. Strip from the rest.
+- **Reveal heading**: `Got it, {name} 🙌` → `Got it, {name}.`
+
+## 6. Recheck — consumer-mindset audit
+
+Walked every step. Coverage now: situation · in_blr · current stay · notice · arrival · move-in · zone+areas+radius+special · workplace · tier+exact budget+food · room · gender · name · must-haves (+other) · deal-breakers · worry · visit/pre-book · visit_when · phone.
+
+We do NOT add: aadhaar, full address, salary, employer ID, parents' phone, alternative numbers. Anything we wouldn't share with a stranger on WhatsApp stays out.
+
+## 7. Files touched
 
 ```text
-src/
-├── components/
-│   ├── gharpayy-form.tsx          (wire new pieces, no question changes)
-│   ├── form-ui.tsx                (typing dots, ticker header, read ticks, voice bubble)
-│   ├── insights/
-│   │   ├── insights-bank.ts       (zone × persona × budget → insight strings)
-│   │   ├── InsightBubble.tsx      (existing, extended)
-│   │   └── MatchPreview.tsx       (3 mock cards, seats-left, vibe tags)
-│   ├── proof/
-│   │   ├── HeaderTicker.tsx
-│   │   └── TrustRing.tsx
-│   └── share/
-│       └── MovePlanCard.tsx       (html2canvas export)
-├── lib/
-│   ├── leads.functions.ts         (submitLead, getQueuePosition)
-│   ├── leads.server.ts            (admin client, alert webhook)
-│   ├── proof-seed.ts              (deterministic numbers)
-│   └── haptics.ts
-├── routes/
-│   ├── admin.tsx                  (passcode-gated lead table + CSV)
-│   └── api/public/lead-alert.ts   (optional, if we move webhook server-side)
-└── public/
-    ├── aayushi-intro.mp3          (placeholder, silent ok)
-    └── send.mp3
+src/components/
+├── gharpayy-form.tsx     (zone mini-flow, budget_exact step, auto-copy effect, remove MatchPreview, button polish, emoji prune, buildMsg + summaryRows + Data updates, phone formatter, privacy line above input)
+└── form-ui.tsx           (ChoiceBlock empty-emoji guard, larger tap targets)
 ```
 
-Dependencies to add: `html2canvas`, nothing else (framer-motion already in).
-Lovable Cloud: enabled, `leads` table + RLS (admin-only via service role; inserts open to anon for the form).
+No new files, no new dependencies, no schema/backend changes.
 
----
+## 8. Order of implementation
 
-## Order of execution
-
-1. Lovable Cloud + `leads` table + `submitLead` (foundation — every other piece feeds it).
-2. Insights bank + match preview + smart timing (biggest perceived value jump).
-3. Header ticker + inline proof + trust ring (urgency layer).
-4. Typing dots + read receipts + voice bubble + reactions (realism layer).
-5. Move-plan share card (viral hook).
-6. Admin route + alert webhook + polish pass.
-
-No question copy or order changes anywhere. Everything is additive around the existing flow.
+1. Extend `Data` type + new step IDs (`budget_exact`, area/radius/special inside zone mini-flow).
+2. Build the zone 4-stage mini-flow.
+3. Add `budget_exact` step + food toggle.
+4. Update `buildMsg` + `summaryRows` for all new fields.
+5. Remove `<MatchPreview />` from reveal; add auto-copy `useEffect` + chip; relabel manual button.
+6. Button polish pass: tap targets, multi-select Continue-pill, phone formatter, Skip cleanup, CTA ordering.
+7. Move privacy line above phone input.
+8. Emoji prune across STEPS, proofFor, buildMsg, reveal heading.

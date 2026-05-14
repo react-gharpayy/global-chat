@@ -7,7 +7,7 @@ import {
 import { ChatHeader } from "@/components/form-ui";
 import { TypingDots, ReadTick } from "@/components/typing-dots";
 import { TrustRing } from "@/components/trust-ring";
-import { MatchPreview } from "@/components/match-preview";
+// (MatchPreview intentionally not rendered on reveal — see plan)
 import { MovePlanCard } from "@/components/move-plan-card";
 import { matchedToday, tierPopularity, visitsBookedToday } from "@/lib/proof-seed";
 import { tap, success } from "@/lib/haptics";
@@ -19,7 +19,9 @@ const GHARPAYY_WA_DISPLAY = "+91 79881 14576";
 // ─── Types ───────────────────────────────────────────────────────────
 type StepId =
   | "welcome" | "story" | "in_blr" | "curr_stay" | "notice"
-  | "arrival" | "movein" | "zone" | "workplace" | "budget"
+  | "arrival" | "movein"
+  | "zone" | "zone_areas" | "zone_radius" | "zone_special"
+  | "workplace" | "budget" | "budget_exact"
   | "room" | "gender" | "name" | "matters" | "matters_other"
   | "dealbreakers" | "worry" | "visit" | "visit_when" | "contact" | "reveal";
 
@@ -36,7 +38,9 @@ type Step =
 type Data = {
   intent?: string; story?: string; in_blr?: string; curr_stay?: string;
   notice?: string; arrival?: string; movein?: string;
-  zone?: string; workplace?: string; budget?: string; room?: string; gender?: string;
+  zone?: string; areas?: string[]; area_other?: string; radius?: string; special_req?: string;
+  workplace?: string; budget?: string; budget_exact?: string; budget_exact_custom?: string; food_pref?: string;
+  room?: string; gender?: string;
   name?: string; matters?: string[]; matters_other?: string;
   dealbreakers?: string[]; worry?: string;
   visit?: string; visit_when?: string;
@@ -45,12 +49,41 @@ type Data = {
 
 // ─── Gharpayy 5 zones (from gharpayy.com) ────────────────────────────
 const ZONE_OPTS: ChoiceOpt[] = [
-  { v: "east",    e: "🌅", t: "East - Whitefield belt",        d: "Whitefield, Brookfield, Marathalli, Mahadevapura" },
-  { v: "orr",     e: "🛣️", t: "ORR - Bellandur side",          d: "Bellandur, Sarjapur Rd, RMZ Ecoworld, Embassy Tech" },
-  { v: "north",   e: "🌳", t: "North - Manyata belt",          d: "Nagawara, Manyata, Hebbal, Yeshwanthpur" },
-  { v: "central", e: "🏙️", t: "Central - Koramangala belt",    d: "Koramangala, Vasanth Nagar, MG Road, Indiranagar" },
-  { v: "south",   e: "🏭", t: "South - Electronic City belt",  d: "Electronic City, BTM, JP Nagar, Bommanahalli" },
+  { v: "east",    e: "", t: "East — Whitefield belt",        d: "ITPL, Brookfield, Marathalli side" },
+  { v: "orr",     e: "", t: "ORR — Bellandur side",          d: "Sarjapur, Embassy Tech, RMZ" },
+  { v: "north",   e: "", t: "North — Manyata belt",          d: "Hebbal, Hennur, Yelahanka" },
+  { v: "central", e: "", t: "Central — Koramangala belt",    d: "Indiranagar, MG Road, Domlur" },
+  { v: "south",   e: "", t: "South — Electronic City belt",  d: "BTM, JP Nagar, Bommanahalli" },
 ];
+
+// ─── Areas / landmarks per zone (multi-select) ───────────────────────
+const ZONE_AREAS: Record<string, string[]> = {
+  east:    ["Whitefield","Brookfield","Marathalli","Mahadevapura","ITPL","EPIP","Kundalahalli","Varthur","Hoodi","KR Puram","Phoenix Marketcity","Graphite Lane","AECS Layout"],
+  orr:     ["Bellandur","Sarjapur Road","Kadubeesanahalli","Devarabeesanahalli","RMZ Ecoworld","Embassy Tech Village","Prestige Tech Park","Cessna Business Park","HSR Layout","Outer Ring Road"],
+  north:   ["Nagawara","Manyata Tech Park","Hebbal","Yeshwanthpur","Hennur","Thanisandra","Jakkur","Yelahanka","Sahakar Nagar","Airport corridor"],
+  central: ["Koramangala","Indiranagar","Vasanth Nagar","MG Road","Domlur","Ulsoor","Richmond Road","Cunningham Road","Lavelle Road","Frazer Town","Shivajinagar"],
+  south:   ["Electronic City Phase 1","Electronic City Phase 2","BTM Layout","JP Nagar","Jayanagar","Bommanahalli","Hosur Road","Bannerghatta Road","Kanakapura Road","Silk Board"],
+};
+
+const RADIUS_OPTS: ChoiceOpt[] = [
+  { v: "walk",  e: "", t: "Walking distance (~1 km)",   d: "Step out, you're there." },
+  { v: "short", e: "", t: "Short ride (1–3 km)",         d: "5-min auto / scooter." },
+  { v: "5km",   e: "", t: "Up to 5 km",                  d: "Quick commute, more options." },
+  { v: "10km",  e: "", t: "Up to 10 km",                 d: "Wider net, best variety." },
+  { v: "any",   e: "", t: "Anywhere in this zone",       d: "Show me everything." },
+];
+
+const BUDGET_EXACT_OPTS: Record<string, string[]> = {
+  basic:   ["7000","8000","9000","10000","11000"],
+  classic: ["12000","13000","14000","15000","16000","17000"],
+  prive:   ["17000","19000","21000","23000","25000","26000"],
+  luxemax: ["25000","30000","35000","40000","45000"],
+};
+const fmtINR = (n: string | number) => {
+  const v = typeof n === "string" ? parseInt(n, 10) : n;
+  if (!v || isNaN(v)) return "";
+  return v >= 1000 ? `₹${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1).replace(/\.0$/, "")}k` : `₹${v}`;
+};
 
 // ─── Insights — vibe & community of each zone (no rent talk) ─────────
 const ZONE_INSIGHT: Record<string, string> = {
@@ -104,12 +137,12 @@ const STEPS: Record<StepId, Step> = {
     q: "What's your situation right now?",
     qs: "Tell me honestly. Shapes everything I'll find for you.",
     opts: [
-      { v: "newjob", e: "🎉", t: "New job offer / starting college", d: "Exciting chapter. Let's settle you right." },
-      { v: "upgrade", e: "😤", t: "Current PG isn't working out", d: "We know that feeling. Let's fix it properly." },
-      { v: "intern", e: "💼", t: "Short internship - 2 to 6 months", d: "Flexible, no lock-in." },
-      { v: "relocate", e: "✈️", t: "Moving to Bangalore from another city", d: "New city, blank slate. We'll smooth it out." },
-      { v: "blr", e: "🏙️", t: "Already in BLR, want something better", d: "You deserve better than what you have now." },
-      { v: "explore", e: "🔍", t: "Just exploring options", d: "No pressure. See what's out there first." },
+      { v: "newjob", e: "", t: "New job offer / starting college", d: "Exciting chapter. Let's settle you right." },
+      { v: "upgrade", e: "", t: "Current PG isn't working out", d: "We know that feeling. Let's fix it properly." },
+      { v: "intern", e: "", t: "Short internship - 2 to 6 months", d: "Flexible, no lock-in." },
+      { v: "relocate", e: "", t: "Moving to Bangalore from another city", d: "New city, blank slate. We'll smooth it out." },
+      { v: "blr", e: "", t: "Already in BLR, want something better", d: "You deserve better than what you have now." },
+      { v: "explore", e: "", t: "Just exploring options", d: "No pressure. See what's out there first." },
     ],
     next: (d) => d.story === "relocate" ? "arrival" : (d.story === "upgrade" || d.story === "blr") ? "curr_stay" : "in_blr",
   },
@@ -119,8 +152,8 @@ const STEPS: Record<StepId, Step> = {
     q: "Are you in Bangalore right now?",
     qs: "Changes what I prioritise.",
     opts: [
-      { v: "yes", e: "📍", t: "Yes, I'm already here", d: "Good. We can move fast." },
-      { v: "no", e: "✈️", t: "No, coming soon", d: "We'll have it ready before you land." },
+      { v: "yes", e: "", t: "Yes, I'm already here", d: "Good. We can move fast." },
+      { v: "no", e: "", t: "No, coming soon", d: "We'll have it ready before you land." },
     ],
     next: (d) => d.in_blr === "yes" ? "curr_stay" : "arrival",
   },
@@ -130,11 +163,11 @@ const STEPS: Record<StepId, Step> = {
     q: "Where are you staying right now?",
     qs: "Helps me read your urgency.",
     opts: [
-      { v: "hotel", e: "🏨", t: "Hotel or temporary Airbnb", d: "Burning cash daily. Let's move fast." },
-      { v: "pg", e: "🏠", t: "Another PG or hostel", d: "Upgrading. We'll find genuinely better." },
-      { v: "flat", e: "🏢", t: "Flat or apartment", d: "Moving to managed - less hassle." },
-      { v: "friend", e: "👥", t: "With a friend or family", d: "Time to get your own space." },
-      { v: "nowhere", e: "🚨", t: "Not settled yet - urgent", d: "This becomes top priority. Right now." },
+      { v: "hotel", e: "", t: "Hotel or temporary Airbnb", d: "Burning cash daily. Let's move fast." },
+      { v: "pg", e: "", t: "Another PG or hostel", d: "Upgrading. We'll find genuinely better." },
+      { v: "flat", e: "", t: "Flat or apartment", d: "Moving to managed - less hassle." },
+      { v: "friend", e: "", t: "With a friend or family", d: "Time to get your own space." },
+      { v: "nowhere", e: "", t: "Not settled yet - urgent", d: "This becomes top priority. Right now." },
     ],
     next: (d) => (d.curr_stay === "hotel" || d.curr_stay === "friend" || d.curr_stay === "nowhere") ? "movein" : "notice",
   },
@@ -144,10 +177,10 @@ const STEPS: Record<StepId, Step> = {
     q: "Have you given notice at your current place?",
     qs: "Tells me how much runway we have.",
     opts: [
-      { v: "given", e: "✅", t: "Yes, last day coming up", d: "Good. Let's find your next home before then." },
-      { v: "not_yet", e: "🕐", t: "Not yet, haven't spoken to them", d: "No stress. We'll time this right." },
-      { v: "difficult", e: "😬", t: "Owner is being difficult", d: "Common. We know how to navigate this." },
-      { v: "free", e: "👍", t: "No contract, can leave anytime", d: "Flexible. Move at your pace." },
+      { v: "given", e: "", t: "Yes, last day coming up", d: "Good. Let's find your next home before then." },
+      { v: "not_yet", e: "", t: "Not yet, haven't spoken to them", d: "No stress. We'll time this right." },
+      { v: "difficult", e: "", t: "Owner is being difficult", d: "Common. We know how to navigate this." },
+      { v: "free", e: "", t: "No contract, can leave anytime", d: "Flexible. Move at your pace." },
     ],
     next: () => "movein",
   },
@@ -157,10 +190,10 @@ const STEPS: Record<StepId, Step> = {
     q: "When are you arriving in Bangalore?",
     qs: "Even a rough idea helps me hold the right rooms.",
     opts: [
-      { v: "thisweek", e: "🔥", t: "This week", d: "Rooms ready before you land." },
-      { v: "thismonth", e: "📅", t: "This month", d: "Time to find something great." },
-      { v: "nextmonth", e: "🗓️", t: "Next month", d: "We'll start matching today." },
-      { v: "later", e: "🔮", t: "2 to 3 months out", d: "We'll stay in touch as it gets closer." },
+      { v: "thisweek", e: "", t: "This week", d: "Rooms ready before you land." },
+      { v: "thismonth", e: "", t: "This month", d: "Time to find something great." },
+      { v: "nextmonth", e: "", t: "Next month", d: "We'll start matching today." },
+      { v: "later", e: "", t: "2 to 3 months out", d: "We'll stay in touch as it gets closer." },
     ],
     next: () => "movein",
   },
@@ -170,10 +203,10 @@ const STEPS: Record<StepId, Step> = {
     q: "When do you want to move in?",
     qs: "We work backwards from this.",
     opts: [
-      { v: "now", e: "🚀", t: "ASAP - I need it NOW", d: "Move-in ready rooms. We act today." },
-      { v: "2wk", e: "📅", t: "Within 2 weeks", d: "Good window. We'll find and hold one." },
-      { v: "month", e: "🗓️", t: "Month-end / next month start", d: "Popular window. Best selection." },
-      { v: "next", e: "⏳", t: "Next month or later", d: "Plan ahead, get the best options." },
+      { v: "now", e: "", t: "ASAP - I need it NOW", d: "Move-in ready rooms. We act today." },
+      { v: "2wk", e: "", t: "Within 2 weeks", d: "Good window. We'll find and hold one." },
+      { v: "month", e: "", t: "Month-end / next month start", d: "Popular window. Best selection." },
+      { v: "next", e: "", t: "Next month or later", d: "Plan ahead, get the best options." },
     ],
     next: () => "zone",
   },
@@ -181,15 +214,41 @@ const STEPS: Record<StepId, Step> = {
   zone: {
     type: "choice", key: "zone",
     q: "Which Gharpayy zone fits your day?",
-    qs: "These are the 5 belts where we actually run properties. Pick the one closest to your daily life.",
+    qs: "5 belts where we actually run properties. Pick the one closest to your daily life.",
     opts: ZONE_OPTS,
+    next: () => "zone_areas",
+  },
+
+  zone_areas: {
+    type: "multi", key: "areas", max: 5, allowOther: true,
+    q: "Any specific areas or landmarks?",
+    qs: "Pick up to 5 — saves us a back-and-forth call later.",
+    opts: [],
+    optional: true,
+    next: () => "zone_radius",
+  },
+
+  zone_radius: {
+    type: "choice", key: "radius",
+    q: "How close do you want to be?",
+    qs: "Tighter radius = fewer options but exact fit. Wider = more variety.",
+    opts: RADIUS_OPTS,
+    optional: true,
+    next: () => "zone_special",
+  },
+
+  zone_special: {
+    type: "text", key: "special_req", optional: true,
+    q: "Any special requirement for the place? (Optional)",
+    qs: "One line is enough. Skip if nothing comes to mind.",
+    ph: "e.g. near a metro stop, parking for car, vegetarian floor…",
     next: () => "workplace",
   },
 
   workplace: {
     type: "text", key: "workplace",
     q: "Office or college name?",
-    qs: "Exact name, not just area. Lets us see how far it really is and what kind of crowd you'll fit with.",
+    qs: "Exact name beats area — we match crowd + commute properly.",
     ph: "e.g. Infosys EC Phase 1, IIM Bangalore, Cisco Cessna…",
     chips: ["Infosys", "Wipro", "Cisco", "Accenture", "IBM Manyata", "Embassy Tech", "ITPL", "Christ University"],
     next: () => "budget",
@@ -200,11 +259,19 @@ const STEPS: Record<StepId, Step> = {
     q: "Which Gharpayy tier feels right?",
     qs: "Pick the one closest to what you've planned. We'll match inside it.",
     opts: [
-      { v: "basic",   e: "✨", t: "BASIC  ₹7k - ₹11k",   d: "Smart. Simple. Reliable. Shared rooms with essentials, food, Wi-Fi." },
-      { v: "classic", e: "🏠", t: "CLASSIC  ₹12k - ₹17k", d: "Comfort that feels natural. Larger layouts, better interiors, good ventilation." },
-      { v: "prive",   e: "🛏️", t: "PRIVE  ₹17k - ₹26k",  d: "Your room. Your space. Your peace. Premium finishes, best food." },
-      { v: "luxemax", e: "👑", t: "LUXE MAX  ₹25k - ₹45k", d: "The flagship benchmark. Hotel-grade housekeeping." },
+      { v: "basic",   e: "", t: "BASIC  ₹7k - ₹11k",   d: "Smart. Simple. Reliable. Shared rooms with essentials, food, Wi-Fi." },
+      { v: "classic", e: "", t: "CLASSIC  ₹12k - ₹17k", d: "Comfort that feels natural. Larger layouts, better interiors, good ventilation." },
+      { v: "prive",   e: "", t: "PRIVE  ₹17k - ₹26k",  d: "Your room. Your space. Your peace. Premium finishes, best food." },
+      { v: "luxemax", e: "", t: "LUXE MAX  ₹25k - ₹45k", d: "The flagship benchmark. Hotel-grade housekeeping." },
     ],
+    next: () => "budget_exact",
+  },
+
+  budget_exact: {
+    type: "choice", key: "budget_exact",
+    q: "Real monthly ceiling?",
+    qs: "Honest number means we only show stays that fit. Saves the back-and-forth.",
+    opts: [],
     next: () => "room",
   },
 
@@ -213,10 +280,10 @@ const STEPS: Record<StepId, Step> = {
     q: "What kind of space do you need?",
     qs: "About what fits your life right now.",
     opts: [
-      { v: "private", e: "🛏️", t: "My own room - full privacy", d: "Your own lock, your own quiet." },
-      { v: "double", e: "👥", t: "Double sharing - one roommate", d: "Most popular. Cost & comfort balance." },
-      { v: "triple", e: "👨‍👩‍👦", t: "Triple sharing - budget priority", d: "Most affordable. Roommates carefully vetted." },
-      { v: "flex", e: "✨", t: "Surprise me - best deal", d: "We match based on everything else." },
+      { v: "private", e: "", t: "My own room — full privacy", d: "Your own lock, your own quiet." },
+      { v: "double",  e: "", t: "Double sharing — one roommate", d: "Most popular. Cost & comfort balance." },
+      { v: "triple",  e: "", t: "Triple sharing — budget priority", d: "Most affordable. Roommates carefully vetted." },
+      { v: "flex",    e: "", t: "Surprise me — best deal", d: "We match based on everything else." },
     ],
     next: () => "gender",
   },
@@ -270,13 +337,13 @@ const STEPS: Record<StepId, Step> = {
     q: "What's worrying you about this search?",
     qs: "We address it before you even meet us. Not a trap.",
     opts: [
-      { v: "deposit", e: "💰", t: "My deposit will get stuck", d: "Official receipt the moment you pay. Always." },
-      { v: "bad_exp", e: "😞", t: "Had a bad PG experience", d: "Tell us when we call - we'll make sure it's different." },
-      { v: "budget_unsure", e: "🤔", t: "Not sure I can afford the good ones", d: "Let's figure it out together." },
-      { v: "parents", e: "👨‍👩‍👦", t: "My parents need comfort too", d: "We speak to families directly. Many parents call us first." },
-      { v: "visit", e: "👁️", t: "I need to see it in person", d: "We arrange visits every day. Zero pressure." },
-      { v: "deciding", e: "⚖️", t: "Comparing a few options", d: "We'll tell you the honest differences." },
-      { v: "ready", e: "🚀", t: "Nothing - I'm ready to move fast", d: "Let's go. Options on the way today." },
+      { v: "deposit", e: "", t: "My deposit will get stuck", d: "Official receipt the moment you pay. Always." },
+      { v: "bad_exp", e: "", t: "Had a bad PG experience", d: "Tell us when we call - we'll make sure it's different." },
+      { v: "budget_unsure", e: "", t: "Not sure I can afford the good ones", d: "Let's figure it out together." },
+      { v: "parents", e: "", t: "My parents need comfort too", d: "We speak to families directly. Many parents call us first." },
+      { v: "visit", e: "", t: "I need to see it in person", d: "We arrange visits every day. Zero pressure." },
+      { v: "deciding", e: "", t: "Comparing a few options", d: "We'll tell you the honest differences." },
+      { v: "ready", e: "", t: "Nothing - I'm ready to move fast", d: "Let's go. Options on the way today." },
     ],
     next: () => "visit",
   },
@@ -294,10 +361,10 @@ const STEPS: Record<StepId, Step> = {
     q: "Great - when works for you?",
     qs: "We'll lock it the moment you confirm. Reschedule anytime.",
     opts: [
-      { v: "today", e: "⚡", t: "Today / tomorrow", d: "Fastest path. Room held for you." },
-      { v: "thisweek", e: "📅", t: "Sometime this week", d: "We'll send 2-3 slots." },
-      { v: "weekend", e: "🌤️", t: "This weekend", d: "Most relaxed time to look around." },
-      { v: "nextweek", e: "🗓️", t: "Next week or later", d: "We'll keep options open till then." },
+      { v: "today", e: "", t: "Today / tomorrow", d: "Fastest path. Room held for you." },
+      { v: "thisweek", e: "", t: "Sometime this week", d: "We'll send 2-3 slots." },
+      { v: "weekend", e: "", t: "This weekend", d: "Most relaxed time to look around." },
+      { v: "nextweek", e: "", t: "Next week or later", d: "We'll keep options open till then." },
     ],
     next: () => "contact",
   },
@@ -320,9 +387,9 @@ const VISIT_DYNAMIC = (d: Data) => {
       q: "Want to visit a place before booking?",
       qs: "5-min tour beats 10 chats. We'll arrange it the same day if you say yes.",
       opts: [
-        { v: "visit", e: "🚪", t: "Yes - take me on a visit", d: "Walk in, see the room, meet the people." },
-        { v: "prebook", e: "🔒", t: "Skip visit - let's pre-book", d: "I trust the verified listings. Save my spot." },
-        { v: "skip", e: "🤔", t: "Not yet - call me first", d: "Talk to expert before deciding." },
+        { v: "visit", e: "", t: "Yes - take me on a visit", d: "Walk in, see the room, meet the people." },
+        { v: "prebook", e: "", t: "Skip visit - let's pre-book", d: "I trust the verified listings. Save my spot." },
+        { v: "skip", e: "", t: "Not yet - call me first", d: "Talk to expert before deciding." },
       ] as ChoiceOpt[],
     };
   }
@@ -330,9 +397,9 @@ const VISIT_DYNAMIC = (d: Data) => {
     q: "Want to pre-book before landing?",
     qs: "Many residents pre-book and walk in straight from the airport with one bag. You can also choose a virtual tour first.",
     opts: [
-      { v: "prebook", e: "🔒", t: "Yes - lock my room before I land", d: "Pre-book guarantee. Walk in straight from the airport." },
-      { v: "visit", e: "📹", t: "Show me a virtual tour first", d: "VR walkthrough on call. Then decide." },
-      { v: "skip", e: "🤔", t: "Just call me first", d: "Talk to expert before deciding." },
+      { v: "prebook", e: "", t: "Yes - lock my room before I land", d: "Pre-book guarantee. Walk in straight from the airport." },
+      { v: "visit", e: "", t: "Show me a virtual tour first", d: "VR walkthrough on call. Then decide." },
+      { v: "skip", e: "", t: "Just call me first", d: "Talk to expert before deciding." },
     ] as ChoiceOpt[],
   };
 };
@@ -351,31 +418,45 @@ const L_GENDER: Record<string,string> = { boys:"Male PG", girls:"Female PG", coe
 const L_WORRY: Record<string,string> = { deposit:"Deposit security", bad_exp:"Past bad experience", budget_unsure:"Budget uncertainty", parents:"Parents' comfort", visit:"In-person visit needed", deciding:"Comparing options", ready:"Ready to move fast" };
 const L_VISIT: Record<string,string> = { visit:"Wants a visit / VR tour", prebook:"Wants to pre-book", skip:"Call first" };
 const L_VISIT_WHEN: Record<string,string> = { today:"Today/tomorrow", thisweek:"This week", weekend:"This weekend", nextweek:"Next week+" };
+const L_RADIUS: Record<string,string> = { walk:"Walking (~1 km)", short:"Short ride (1-3 km)", "5km":"Up to 5 km", "10km":"Up to 10 km", any:"Anywhere in zone" };
+const L_FOOD: Record<string,string> = { included:"Food included", extra:"Food extra is fine" };
+
+
 
 function buildMsg(d: Data, elapsed: number): string {
   const lines: string[] = [];
-  lines.push("*GHARPAYY* New Lead ⚡");
+  lines.push("*GHARPAYY* New Lead");
   lines.push("————————————————");
   lines.push(`📝 *Name:* ${d.name || "-"}`);
   lines.push(`📱 *Phone:* ${d.phone || "-"}`);
   lines.push("");
-  if (d.intent) lines.push(`🎯 *Looking for:* ${L_INTENT[d.intent] || d.intent}`);
-  if (d.story) lines.push(`📌 *Situation:* ${L_STORY[d.story] || d.story}`);
-  if (d.in_blr) lines.push(`📍 *In BLR:* ${d.in_blr === "yes" ? "Yes" : "No"}`);
-  if (d.curr_stay) lines.push(`🏠 *Currently in:* ${L_CURR[d.curr_stay]}`);
-  if (d.notice) lines.push(`📋 *Notice:* ${L_NOTICE[d.notice]}`);
-  if (d.arrival) lines.push(`✈️ *Arriving:* ${L_ARRIVAL[d.arrival]}`);
-  if (d.movein) lines.push(`📆 *Move-in:* ${L_MOVEIN[d.movein]}`);
+  if (d.intent) lines.push(`*Looking for:* ${L_INTENT[d.intent] || d.intent}`);
+  if (d.story) lines.push(`*Situation:* ${L_STORY[d.story] || d.story}`);
+  if (d.in_blr) lines.push(`*In BLR:* ${d.in_blr === "yes" ? "Yes" : "No"}`);
+  if (d.curr_stay) lines.push(`*Currently in:* ${L_CURR[d.curr_stay]}`);
+  if (d.notice) lines.push(`*Notice:* ${L_NOTICE[d.notice]}`);
+  if (d.arrival) lines.push(`*Arriving:* ${L_ARRIVAL[d.arrival]}`);
+  if (d.movein) lines.push(`*Move-in:* ${L_MOVEIN[d.movein]}`);
   if (d.zone) lines.push(`🗺️ *Zone:* ${L_ZONE[d.zone]}`);
-  if (d.workplace) lines.push(`🏢 *Workplace:* ${d.workplace}`);
-  if (d.budget) lines.push(`💰 *Tier:* ${L_BUDGET[d.budget]}/month`);
-  if (d.room) lines.push(`🛏️ *Room:* ${L_ROOM[d.room]}`);
-  if (d.gender) lines.push(`👤 *For:* ${L_GENDER[d.gender]}`);
-  if (d.matters?.length) lines.push(`\n✨ *Must-haves:* ${d.matters.join(", ")}`);
-  if (d.matters_other) lines.push(`✨ *Also:* ${d.matters_other}`);
-  if (d.dealbreakers?.length) lines.push(`🚫 *Deal-breakers:* ${d.dealbreakers.join(", ")}`);
-  if (d.worry) lines.push(`\n💬 *Concern:* ${L_WORRY[d.worry]}`);
-  if (d.visit) lines.push(`🚪 *Next action:* ${L_VISIT[d.visit]}${d.visit_when ? ` - ${L_VISIT_WHEN[d.visit_when]}` : ""}`);
+  if (d.areas?.length || d.area_other) lines.push(`*Areas:* ${[...(d.areas || []), d.area_other].filter(Boolean).join(", ")}`);
+  if (d.radius) lines.push(`*Radius:* ${L_RADIUS[d.radius]}`);
+  if (d.special_req) lines.push(`*Special:* ${d.special_req}`);
+  if (d.workplace) lines.push(`*Workplace:* ${d.workplace}`);
+  if (d.budget) {
+    const ex = d.budget_exact === "flex" ? "flexible inside tier"
+      : d.budget_exact === "custom" ? (d.budget_exact_custom ? `ceiling ${fmtINR(d.budget_exact_custom)}/mo` : "")
+      : d.budget_exact ? `ceiling ${fmtINR(d.budget_exact)}/mo` : "";
+    const food = d.food_pref ? L_FOOD[d.food_pref] : "";
+    const tail = [ex, food].filter(Boolean).join(" · ");
+    lines.push(`💰 *Budget:* ${L_BUDGET[d.budget]}${tail ? ` · ${tail}` : ""}`);
+  }
+  if (d.room) lines.push(`*Room:* ${L_ROOM[d.room]}`);
+  if (d.gender) lines.push(`*For:* ${L_GENDER[d.gender]}`);
+  if (d.matters?.length) lines.push(`\n*Must-haves:* ${d.matters.join(", ")}`);
+  if (d.matters_other) lines.push(`*Also:* ${d.matters_other}`);
+  if (d.dealbreakers?.length) lines.push(`*Deal-breakers:* ${d.dealbreakers.join(", ")}`);
+  if (d.worry) lines.push(`\n*Concern:* ${L_WORRY[d.worry]}`);
+  if (d.visit) lines.push(`*Next action:* ${L_VISIT[d.visit]}${d.visit_when ? ` - ${L_VISIT_WHEN[d.visit_when]}` : ""}`);
   lines.push("————————————————");
   lines.push(`via Gharpayy expert${elapsed ? ` · ${elapsed}s` : ""}`);
   lines.push("Reply within 30 mins.");
@@ -386,15 +467,24 @@ function buildMsg(d: Data, elapsed: number): string {
 function echoFor(step: StepId, d: Data): string | null {
   const s = STEPS[step];
   if (step === "welcome") return d.intent ? L_INTENT[d.intent] : null;
-  if (step === "name") return d.name ? `👋 ${d.name}` : null;
+  if (step === "name") return d.name ? `${d.name}` : null;
   if (step === "visit") {
     return d.visit ? `${L_VISIT[d.visit]}` : null;
+  }
+  if (step === "zone_areas") {
+    const a = [...(d.areas || []), d.area_other].filter(Boolean);
+    return a.length ? a.map(x => `✓ ${x}`).join("  ") : null;
+  }
+  if (step === "budget_exact") {
+    if (d.budget_exact === "flex") return "Flexible inside tier";
+    if (d.budget_exact === "custom") return d.budget_exact_custom ? `Ceiling ${fmtINR(d.budget_exact_custom)}/mo` : null;
+    return d.budget_exact ? `Ceiling ${fmtINR(d.budget_exact)}/mo${d.food_pref ? ` · ${L_FOOD[d.food_pref]}` : ""}` : null;
   }
   if (!s) return null;
   if (s.type === "choice") {
     const v = (d as Record<string, unknown>)[s.key] as string | undefined;
     const opt = s.opts.find(o => o.v === v);
-    return opt ? `${opt.e} ${opt.t}` : null;
+    return opt ? `${opt.e ? opt.e + " " : ""}${opt.t}` : null;
   }
   if (s.type === "text") {
     const v = (d as Record<string, unknown>)[s.key] as string | undefined;
@@ -418,9 +508,9 @@ function insightFor(step: StepId, d: Data): string | null {
 
 // Live social-proof line for completed steps
 function proofFor(step: StepId, d: Data): string | null {
-  if (step === "zone" && d.zone) return `📊 ${matchedToday(d.zone)} people from your zone matched this week.`;
-  if (step === "budget" && d.budget && d.zone) return `🔥 Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
-  if (step === "visit" && d.visit === "visit") return `🚪 ${visitsBookedToday()} visits already booked today.`;
+  if (step === "zone" && d.zone) return `${matchedToday(d.zone)} people from your zone matched this week.`;
+  if (step === "budget" && d.budget && d.zone) return `Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
+  if (step === "visit" && d.visit === "visit") return `${visitsBookedToday()} visits already booked today.`;
   return null;
 }
 
@@ -579,8 +669,24 @@ export default function GharpayyForm() {
     try {
       await navigator.clipboard.writeText(waMessage);
       setCopied(true); setTimeout(() => setCopied(false), 2000);
-    } catch { /* ignore */ }
+      return true;
+    } catch { return false; }
   };
+
+  const [autoCopied, setAutoCopied] = useState<null | boolean>(null);
+  useEffect(() => {
+    if (cur !== "reveal") { setAutoCopied(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        await navigator.clipboard.writeText(waMessage);
+        if (!cancelled) { setAutoCopied(true); setCopied(true); }
+      } catch {
+        if (!cancelled) setAutoCopied(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [cur, waMessage]);
 
   const isInteractive = cur !== "welcome" && cur !== "reveal";
   const subtitle = cur === "welcome"
@@ -702,7 +808,7 @@ export default function GharpayyForm() {
                 className="flex flex-col gap-2.5"
               >
                 {/* CHOICE */}
-                {STEPS[cur].type === "choice" && cur !== "visit" && (
+                {STEPS[cur].type === "choice" && cur !== "visit" && cur !== "budget_exact" && (
                   <ChoiceBlock
                     step={STEPS[cur] as Extract<Step, { type: "choice" }>}
                     selected={(data as Record<string, unknown>)[(STEPS[cur] as Extract<Step, { type: "choice" }>).key] as string | undefined}
@@ -720,6 +826,75 @@ export default function GharpayyForm() {
                     onSkip={() => { setHistory(h => [...h, "visit"]); setCur("contact"); }}
                   />
                 )}
+
+                {/* BUDGET EXACT (per-tier chips + custom + food toggle) */}
+                {cur === "budget_exact" && (() => {
+                  const tier = data.budget || "basic";
+                  const opts = BUDGET_EXACT_OPTS[tier] || [];
+                  const tierLabel = L_BUDGET[tier] || "this tier";
+                  const isCustom = data.budget_exact === "custom";
+                  return (
+                    <>
+                      <Bubble side="in" delay={0.05}>
+                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">Real monthly ceiling inside {tierLabel}?</p>
+                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">Honest number means we only show stays that fit. One tap saves a 20-min back-and-forth call later.</p>
+                      </Bubble>
+                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+                        <div className="flex flex-wrap gap-1.5">
+                          {opts.map(n => {
+                            const on = data.budget_exact === n;
+                            return (
+                              <button key={n} type="button"
+                                onClick={() => { tap(); setData(d => ({ ...d, budget_exact: n, budget_exact_custom: undefined })); }}
+                                className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                                {fmtINR(n)}
+                              </button>
+                            );
+                          })}
+                          <button type="button"
+                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "flex", budget_exact_custom: undefined })); }}
+                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${data.budget_exact === "flex" ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#128C7E] border-[#25D366]/40 hover:bg-[#25D366]/10"}`}>
+                            Flexible inside tier
+                          </button>
+                          <button type="button"
+                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "custom" })); }}
+                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border border-dashed transition-all ${isCustom ? "bg-[#25D366]/10 text-[#128C7E] border-[#128C7E]" : "text-[#128C7E] border-[#128C7E]/40 hover:bg-[#25D366]/5"}`}>
+                            + Set my own number
+                          </button>
+                        </div>
+                        {isCustom && (
+                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+                            <input type="number" inputMode="numeric" placeholder="e.g. 18500"
+                              value={data.budget_exact_custom || ""}
+                              onChange={e => setData(d => ({ ...d, budget_exact_custom: e.target.value.replace(/\D/g, "") }))}
+                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                            <p className="text-[10.5px] text-[#667781] mt-1.5">Per month, in rupees.</p>
+                          </div>
+                        )}
+                        <div className="mt-3 pt-2.5 border-t border-black/5">
+                          <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] mb-1.5">Food</p>
+                          <div className="flex gap-1.5">
+                            {(["included","extra"] as const).map(f => {
+                              const on = data.food_pref === f;
+                              return (
+                                <button key={f} type="button"
+                                  onClick={() => { tap(); setData(d => ({ ...d, food_pref: on ? undefined : f })); }}
+                                  className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366]"}`}>
+                                  {on && "✓ "}{L_FOOD[f]}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <ContinueBtn
+                        disabled={!data.budget_exact || (isCustom && !(data.budget_exact_custom || "").length)}
+                        onClick={() => advance()}
+                      />
+                    </>
+                  );
+                })()}
+
 
                 {/* TEXT */}
                 {STEPS[cur].type === "text" && (() => {
@@ -788,6 +963,9 @@ export default function GharpayyForm() {
                 {STEPS[cur].type === "multi" && (() => {
                   const s = STEPS[cur] as Extract<Step, { type: "multi" }>;
                   const arr = ((data as Record<string, unknown>)[s.key] as string[]) || [];
+                  const isAreas = cur === "zone_areas";
+                  const opts = isAreas ? (ZONE_AREAS[data.zone || ""] || []) : s.opts;
+                  const otherTarget: StepId | null = cur === "matters" ? "matters_other" : null;
                   return (
                     <>
                       <Bubble side="in" delay={0.05}>
@@ -796,7 +974,7 @@ export default function GharpayyForm() {
                       </Bubble>
                       <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
                         <div className="flex flex-wrap gap-1.5">
-                          {s.opts.map(o => {
+                          {opts.map(o => {
                             const on = arr.includes(o);
                             const disabled = !on && arr.length >= s.max;
                             return (
@@ -808,25 +986,36 @@ export default function GharpayyForm() {
                               </button>
                             );
                           })}
-                          {s.allowOther && (
+                          {s.allowOther && otherTarget && (
                             <button type="button"
-                              onClick={() => { setHistory(h => [...h, cur]); setCur("matters_other"); }}
+                              onClick={() => { setHistory(h => [...h, cur]); setCur(otherTarget); }}
                               className="px-3 py-1.5 rounded-full text-[12.5px] font-medium border border-dashed border-[#128C7E]/40 text-[#128C7E] bg-[#25D366]/5 hover:bg-[#25D366]/10">
                               + Write your own
                             </button>
                           )}
                         </div>
+                        {isAreas && (
+                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] block mb-1">+ Add another area</label>
+                            <input type="text" placeholder="e.g. Kasavanahalli, Bagmane Tech Park"
+                              value={data.area_other || ""}
+                              onChange={e => setData(d => ({ ...d, area_other: e.target.value }))}
+                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                          </div>
+                        )}
                         <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
                           {arr.length} of {s.max} selected
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <button type="button" onClick={() => advance()}
-                          className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
-                          Skip
-                        </button>
+                        {s.optional && (
+                          <button type="button" onClick={() => advance()}
+                            className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
+                            Skip
+                          </button>
+                        )}
                         <ContinueBtn
-                          disabled={!s.optional && arr.length === 0}
+                          disabled={!s.optional && arr.length === 0 && !(isAreas && (data.area_other || "").trim().length > 0)}
                           onClick={() => advance()}
                           className="flex-1"
                         />
@@ -842,20 +1031,29 @@ export default function GharpayyForm() {
                       <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as Extract<Step, { type: "contact" }>).q}</p>
                       <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as Extract<Step, { type: "contact" }>).qs}</p>
                     </Bubble>
+                    <p className="text-[11px] text-[#667781] leading-snug px-1 flex items-start gap-1.5">
+                      <Lock className="w-3 h-3 text-[#25D366] mt-0.5 flex-shrink-0" />
+                      Goes only to our internal team. Never to brokers, never sold.
+                    </p>
                     <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 space-y-3">
                       <div>
                         <label className="text-[10px] font-bold uppercase tracking-wider text-[#667781] block mb-1.5">WhatsApp number</label>
-                        <input ref={inputRef} type="tel" placeholder="10-digit mobile" inputMode="numeric"
-                          value={data.phone || ""}
-                          onChange={e => setData(d => ({ ...d, phone: e.target.value }))}
-                          onKeyDown={e => { if (e.key === "Enter") submitContact(); }}
-                          className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                        <div className="flex items-center gap-2 bg-[#F0F2F5] rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-[#25D366]/30">
+                          <span className="text-[14px] text-[#667781] font-semibold">+91</span>
+                          <input ref={inputRef} type="tel" placeholder="98765 43210" inputMode="numeric"
+                            value={(() => {
+                              const d = (data.phone || "").replace(/\D/g, "").replace(/^91/, "").slice(0, 10);
+                              return d.length > 5 ? `${d.slice(0,5)} ${d.slice(5)}` : d;
+                            })()}
+                            onChange={e => {
+                              const digits = e.target.value.replace(/\D/g, "").replace(/^91/, "").slice(0, 10);
+                              setData(d => ({ ...d, phone: digits }));
+                            }}
+                            onKeyDown={e => { if (e.key === "Enter") submitContact(); }}
+                            className="flex-1 bg-transparent text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+                        </div>
                       </div>
                     </div>
-                    <p className="text-[11px] text-[#667781] leading-snug px-1 flex items-start gap-1.5">
-                      <Lock className="w-3 h-3 text-[#25D366] mt-0.5 flex-shrink-0" />
-                      Your number goes only to our internal team. Never to brokers, never sold.
-                    </p>
                     <button type="button" onClick={submitContact}
                       disabled={(data.phone || "").replace(/\D/g, "").length < 10}
                       className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold disabled:opacity-60 flex items-center justify-center gap-2">
@@ -869,14 +1067,19 @@ export default function GharpayyForm() {
                   <>
                     <Bubble side="in" delay={0.05}>
                       <p className="text-[15px] font-bold text-[#111B21] leading-snug">
-                        Got it{data.name ? `, ${data.name}` : ""} 🙌
+                        Got it{data.name ? `, ${data.name}` : ""}.
                       </p>
                       <p className="text-[13px] text-[#111B21] leading-snug mt-1">
                         You're #{1 + (matchedToday(data.zone) % 4)} in Aayushi's queue. We have everything we need to start.
                       </p>
                     </Bubble>
 
-                    <MatchPreview zone={data.zone} name={data.name} />
+                    {autoCopied !== null && (
+                      <div className={`self-center max-w-[94%] px-3 py-2 rounded-full text-[11.5px] font-semibold flex items-center gap-1.5 ${autoCopied ? "bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30" : "bg-amber-50 text-amber-800 border border-amber-200"}`}>
+                        <Copy className="w-3 h-3" />
+                        {autoCopied ? "Brief auto-copied — paste anywhere ✓" : "Tap copy below to grab your brief"}
+                      </div>
+                    )}
 
                     <MovePlanCard
                       name={data.name}
@@ -907,8 +1110,9 @@ export default function GharpayyForm() {
                       </a>
 
                       <button type="button" onClick={copy}
+                        title={autoCopied ? "Already on your clipboard" : ""}
                         className="w-full py-2.5 rounded-full text-[13px] font-semibold text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center gap-2">
-                        <Copy className="w-3.5 h-3.5" /> {copied ? "Copied ✓" : "Copy my brief"}
+                        <Copy className="w-3.5 h-3.5" /> {copied ? (autoCopied ? "Copy again" : "Copied ✓") : "Copy my brief"}
                       </button>
 
                       {!showCustom ? (
@@ -1012,8 +1216,8 @@ function ChoiceBlock({
               transition={{ delay: 0.1 + i * 0.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => onPick(o.v)}
-              className={`w-full flex items-center gap-3 rounded-2xl p-3 text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
-              <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>
+              className={`w-full flex items-center gap-3 rounded-2xl p-3 min-h-[56px] text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
+              {o.e && <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
                 <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
@@ -1025,7 +1229,7 @@ function ChoiceBlock({
           );
         })}
       </div>
-      <SkipRow onSkip={onSkip} />
+      {step.optional && <SkipRow onSkip={onSkip} />}
     </>
   );
 }
@@ -1116,8 +1320,13 @@ function summaryRows(d: Data): [string, string][] {
     ["Arriving", d.arrival ? L_ARRIVAL[d.arrival] : undefined],
     ["Move-in", d.movein ? L_MOVEIN[d.movein] : undefined],
     ["Zone", d.zone ? L_ZONE[d.zone] : undefined],
+    ["Areas", [...(d.areas || []), d.area_other].filter(Boolean).join(", ") || undefined],
+    ["Radius", d.radius ? L_RADIUS[d.radius] : undefined],
+    ["Special", d.special_req],
     ["Workplace", d.workplace],
     ["Tier", d.budget ? `${L_BUDGET[d.budget]}/month` : undefined],
+    ["Ceiling", d.budget_exact === "flex" ? "Flexible inside tier" : d.budget_exact === "custom" ? (d.budget_exact_custom ? `${fmtINR(d.budget_exact_custom)}/mo` : undefined) : d.budget_exact ? `${fmtINR(d.budget_exact)}/mo` : undefined],
+    ["Food", d.food_pref ? L_FOOD[d.food_pref] : undefined],
     ["Room", d.room ? L_ROOM[d.room] : undefined],
     ["For", d.gender ? L_GENDER[d.gender] : undefined],
     ["Name", d.name],
