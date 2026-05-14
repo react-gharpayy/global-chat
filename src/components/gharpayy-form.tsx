@@ -1034,9 +1034,14 @@ function ChoiceBlock({
 function HistoryStep({ step, data }: { step: StepId; data: Data }) {
   const echo = echoFor(step, data);
   const insight = insightFor(step, data);
+  const proof = proofFor(step, data);
 
   if (step === "welcome") {
-    return echo ? <Bubble side="out"><p className="text-[13px] text-[#111B21] leading-snug">{echo}</p></Bubble> : null;
+    return echo ? (
+      <Bubble side="out">
+        <p className="text-[13px] text-[#111B21] leading-snug">{echo}<ReadTick /></p>
+      </Bubble>
+    ) : null;
   }
 
   const q = questionFor(step, data);
@@ -1050,7 +1055,7 @@ function HistoryStep({ step, data }: { step: StepId; data: Data }) {
       )}
       {echo && (
         <Bubble side="out">
-          <p className="text-[13px] text-[#111B21] leading-snug">{echo}</p>
+          <p className="text-[13px] text-[#111B21] leading-snug">{echo}<ReadTick /></p>
         </Bubble>
       )}
       {insight && (
@@ -1060,6 +1065,11 @@ function HistoryStep({ step, data }: { step: StepId; data: Data }) {
             <span>{insight}</span>
           </p>
         </Bubble>
+      )}
+      {proof && (
+        <div className="self-center max-w-[92%] px-3 py-1.5 rounded-full bg-[#1F47BA]/8 border border-[#1F47BA]/20 text-[10.5px] text-[#1F47BA] font-semibold flex items-center gap-1.5">
+          {proof}
+        </div>
       )}
     </>
   );
