@@ -682,7 +682,16 @@ export default function GharpayyForm() {
               </>
             )}
 
+            {/* SUBMITTING — trust ring */}
+            {submitting && <TrustRing onDone={finishSubmit} />}
+
+            {/* TYPING — Aayushi composing */}
+            <AnimatePresence>
+              {typing && !submitting && cur !== "welcome" && cur !== "reveal" && <TypingDots key="typing" />}
+            </AnimatePresence>
+
             {/* ACTIVE STEP */}
+            {!typing && !submitting && (
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={cur}
