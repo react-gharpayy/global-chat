@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { type Lang, langLabels, t, getAmenityKeys } from "@/lib/i18n";
 import {
-  Orb, BackBar, NextBtn, GlassCard, FieldLabel, Sub, StepTitle,
+  ChatHeader, BackBar, NextBtn, GlassCard, FieldLabel, Sub, StepTitle,
   Toggle, PillGroup, TextInput, BudgetSlider, Confetti, anim, trans,
 } from "@/components/form-ui";
 
@@ -152,15 +152,14 @@ export default function GharpayyForm() {
   )}`;
 
   return (
-    <div className="min-h-[100dvh] w-full flex justify-center bg-background">
+    <div className="min-h-[100dvh] w-full flex justify-center" style={{ background: "#075E54" }}>
       {showConfetti && <Confetti />}
-      <div className="w-full max-w-md relative min-h-[100dvh] flex flex-col overflow-hidden">
-        <Orb className="w-96 h-96 top-[-100px] right-[-80px]" color={sc?.color ?? "oklch(0.55 0.22 295)"} />
-        <Orb className="w-72 h-72 bottom-[-60px] left-[-50px]" color="oklch(0.80 0.16 85)" />
-
+      <div className="w-full max-w-md relative min-h-[100dvh] flex flex-col overflow-hidden wa-chat-bg">
+        {step === S.WELCOME && <ChatHeader subtitle="typing…" />}
         {step > 0 && step < S.SUCCESS && (
           <BackBar step={step} onBack={back} progress={progress} total={TOTAL} lang={lang} />
         )}
+        {step === S.SUCCESS && <ChatHeader subtitle="online" />}
 
         <div className="flex-1 flex flex-col overflow-y-auto">
           <AnimatePresence mode="wait">
