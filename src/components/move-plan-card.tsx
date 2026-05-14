@@ -35,8 +35,8 @@ export function MovePlanCard({
       if (!blob) return;
       const file = new File([blob], "gharpayy-move-plan.png", { type: "image/png" });
       const text = `My Bangalore move plan — locked in with @Gharpayy 🏠`;
-      // @ts-expect-error - canShare optional
-      if (navigator.canShare?.({ files: [file] })) {
+      const nav = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean };
+      if (nav.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], text, title: "My Bangalore move plan" });
       } else {
         const url = URL.createObjectURL(blob);
