@@ -815,7 +815,7 @@ export default function GharpayyForm() {
                 className="flex flex-col gap-2.5"
               >
                 {/* CHOICE */}
-                {STEPS[cur].type === "choice" && cur !== "visit" && (
+                {STEPS[cur].type === "choice" && cur !== "visit" && cur !== "budget_exact" && (
                   <ChoiceBlock
                     step={STEPS[cur] as Extract<Step, { type: "choice" }>}
                     selected={(data as Record<string, unknown>)[(STEPS[cur] as Extract<Step, { type: "choice" }>).key] as string | undefined}
@@ -833,6 +833,75 @@ export default function GharpayyForm() {
                     onSkip={() => { setHistory(h => [...h, "visit"]); setCur("contact"); }}
                   />
                 )}
+
+                {/* BUDGET EXACT (per-tier chips + custom + food toggle) */}
+                {cur === "budget_exact" && (() => {
+                  const tier = data.budget || "basic";
+                  const opts = BUDGET_EXACT_OPTS[tier] || [];
+                  const tierLabel = L_BUDGET[tier] || "this tier";
+                  const isCustom = data.budget_exact === "custom";
+                  return (
+                    <>
+                      <Bubble side="in" delay={0.05}>
+                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">Real monthly ceiling inside {tierLabel}?</p>
+                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">Honest number means we only show stays that fit. One tap saves a 20-min back-and-forth call later.</p>
+                      </Bubble>
+                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+                        <div className="flex flex-wrap gap-1.5">
+                          {opts.map(n => {
+                            const on = data.budget_exact === n;
+                            return (
+                              <button key={n} type="button"
+                                onClick={() => { tap(); setData(d => ({ ...d, budget_exact: n, budget_exact_custom: undefined })); }}
+                                className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                                {fmtINR(n)}
+                              </button>
+                            );
+                          })}
+                          <button type="button"
+                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "flex", budget_exact_custom: undefined })); }}
+                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${data.budget_exact === "flex" ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#128C7E] border-[#25D366]/40 hover:bg-[#25D366]/10"}`}>
+                            Flexible inside tier
+                          </button>
+                          <button type="button"
+                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "custom" })); }}
+                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border border-dashed transition-all ${isCustom ? "bg-[#25D366]/10 text-[#128C7E] border-[#128C7E]" : "text-[#128C7E] border-[#128C7E]/40 hover:bg-[#25D366]/5"}`}>
+                            + Set my own number
+                          </button>
+                        </div>
+                        {isCustom && (
+                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+                            <input type="number" inputMode="numeric" placeholder="e.g. 18500"
+                              value={data.budget_exact_custom || ""}
+                              onChange={e => setData(d => ({ ...d, budget_exact_custom: e.target.value.replace(/\D/g, "") }))}
+                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                            <p className="text-[10.5px] text-[#667781] mt-1.5">Per month, in rupees.</p>
+                          </div>
+                        )}
+                        <div className="mt-3 pt-2.5 border-t border-black/5">
+                          <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] mb-1.5">Food</p>
+                          <div className="flex gap-1.5">
+                            {(["included","extra"] as const).map(f => {
+                              const on = data.food_pref === f;
+                              return (
+                                <button key={f} type="button"
+                                  onClick={() => { tap(); setData(d => ({ ...d, food_pref: on ? undefined : f })); }}
+                                  className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366]"}`}>
+                                  {on && "✓ "}{L_FOOD[f]}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <ContinueBtn
+                        disabled={!data.budget_exact || (isCustom && !(data.budget_exact_custom || "").length)}
+                        onClick={() => advance()}
+                      />
+                    </>
+                  );
+                })()}
+
 
                 {/* TEXT */}
                 {STEPS[cur].type === "text" && (() => {
