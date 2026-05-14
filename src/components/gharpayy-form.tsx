@@ -676,8 +676,24 @@ export default function GharpayyForm() {
     try {
       await navigator.clipboard.writeText(waMessage);
       setCopied(true); setTimeout(() => setCopied(false), 2000);
-    } catch { /* ignore */ }
+      return true;
+    } catch { return false; }
   };
+
+  const [autoCopied, setAutoCopied] = useState<null | boolean>(null);
+  useEffect(() => {
+    if (cur !== "reveal") { setAutoCopied(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        await navigator.clipboard.writeText(waMessage);
+        if (!cancelled) { setAutoCopied(true); setCopied(true); }
+      } catch {
+        if (!cancelled) setAutoCopied(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [cur, waMessage]);
 
   const isInteractive = cur !== "welcome" && cur !== "reveal";
   const subtitle = cur === "welcome"
