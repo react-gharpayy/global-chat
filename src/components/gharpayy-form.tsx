@@ -7,7 +7,7 @@ import {
 import { ChatHeader } from "@/components/form-ui";
 import { TypingDots, ReadTick } from "@/components/typing-dots";
 import { TrustRing } from "@/components/trust-ring";
-import { MatchPreview } from "@/components/match-preview";
+// (MatchPreview intentionally not rendered on reveal — see plan)
 import { MovePlanCard } from "@/components/move-plan-card";
 import { matchedToday, tierPopularity, visitsBookedToday } from "@/lib/proof-seed";
 import { tap, success } from "@/lib/haptics";
