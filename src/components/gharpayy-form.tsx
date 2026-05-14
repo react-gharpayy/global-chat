@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { type Lang, langLabels, t, getAmenityKeys } from "@/lib/i18n";
 import {
-  Orb, BackBar, NextBtn, GlassCard, FieldLabel, Sub, StepTitle,
+  ChatHeader, BackBar, NextBtn, GlassCard, FieldLabel, Sub, StepTitle,
   Toggle, PillGroup, TextInput, BudgetSlider, Confetti, anim, trans,
 } from "@/components/form-ui";
 
