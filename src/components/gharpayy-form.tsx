@@ -49,12 +49,41 @@ type Data = {
 
 // ─── Gharpayy 5 zones (from gharpayy.com) ────────────────────────────
 const ZONE_OPTS: ChoiceOpt[] = [
-  { v: "east",    e: "🌅", t: "East - Whitefield belt",        d: "Whitefield, Brookfield, Marathalli, Mahadevapura" },
-  { v: "orr",     e: "🛣️", t: "ORR - Bellandur side",          d: "Bellandur, Sarjapur Rd, RMZ Ecoworld, Embassy Tech" },
-  { v: "north",   e: "🌳", t: "North - Manyata belt",          d: "Nagawara, Manyata, Hebbal, Yeshwanthpur" },
-  { v: "central", e: "🏙️", t: "Central - Koramangala belt",    d: "Koramangala, Vasanth Nagar, MG Road, Indiranagar" },
-  { v: "south",   e: "🏭", t: "South - Electronic City belt",  d: "Electronic City, BTM, JP Nagar, Bommanahalli" },
+  { v: "east",    e: "", t: "East — Whitefield belt",        d: "ITPL, Brookfield, Marathalli side" },
+  { v: "orr",     e: "", t: "ORR — Bellandur side",          d: "Sarjapur, Embassy Tech, RMZ" },
+  { v: "north",   e: "", t: "North — Manyata belt",          d: "Hebbal, Hennur, Yelahanka" },
+  { v: "central", e: "", t: "Central — Koramangala belt",    d: "Indiranagar, MG Road, Domlur" },
+  { v: "south",   e: "", t: "South — Electronic City belt",  d: "BTM, JP Nagar, Bommanahalli" },
 ];
+
+// ─── Areas / landmarks per zone (multi-select) ───────────────────────
+const ZONE_AREAS: Record<string, string[]> = {
+  east:    ["Whitefield","Brookfield","Marathalli","Mahadevapura","ITPL","EPIP","Kundalahalli","Varthur","Hoodi","KR Puram","Phoenix Marketcity","Graphite Lane","AECS Layout"],
+  orr:     ["Bellandur","Sarjapur Road","Kadubeesanahalli","Devarabeesanahalli","RMZ Ecoworld","Embassy Tech Village","Prestige Tech Park","Cessna Business Park","HSR Layout","Outer Ring Road"],
+  north:   ["Nagawara","Manyata Tech Park","Hebbal","Yeshwanthpur","Hennur","Thanisandra","Jakkur","Yelahanka","Sahakar Nagar","Airport corridor"],
+  central: ["Koramangala","Indiranagar","Vasanth Nagar","MG Road","Domlur","Ulsoor","Richmond Road","Cunningham Road","Lavelle Road","Frazer Town","Shivajinagar"],
+  south:   ["Electronic City Phase 1","Electronic City Phase 2","BTM Layout","JP Nagar","Jayanagar","Bommanahalli","Hosur Road","Bannerghatta Road","Kanakapura Road","Silk Board"],
+};
+
+const RADIUS_OPTS: ChoiceOpt[] = [
+  { v: "walk",  e: "", t: "Walking distance (~1 km)",   d: "Step out, you're there." },
+  { v: "short", e: "", t: "Short ride (1–3 km)",         d: "5-min auto / scooter." },
+  { v: "5km",   e: "", t: "Up to 5 km",                  d: "Quick commute, more options." },
+  { v: "10km",  e: "", t: "Up to 10 km",                 d: "Wider net, best variety." },
+  { v: "any",   e: "", t: "Anywhere in this zone",       d: "Show me everything." },
+];
+
+const BUDGET_EXACT_OPTS: Record<string, string[]> = {
+  basic:   ["7000","8000","9000","10000","11000"],
+  classic: ["12000","13000","14000","15000","16000","17000"],
+  prive:   ["17000","19000","21000","23000","25000","26000"],
+  luxemax: ["25000","30000","35000","40000","45000"],
+};
+const fmtINR = (n: string | number) => {
+  const v = typeof n === "string" ? parseInt(n, 10) : n;
+  if (!v || isNaN(v)) return "";
+  return v >= 1000 ? `₹${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1).replace(/\.0$/, "")}k` : `₹${v}`;
+};
 
 // ─── Insights — vibe & community of each zone (no rent talk) ─────────
 const ZONE_INSIGHT: Record<string, string> = {
