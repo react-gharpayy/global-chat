@@ -872,9 +872,22 @@ export default function GharpayyForm() {
                         Got it{data.name ? `, ${data.name}` : ""} 🙌
                       </p>
                       <p className="text-[13px] text-[#111B21] leading-snug mt-1">
-                        Your stay-hunt is now in the queue with our Gharpayy expert. We have everything we need to start.
+                        You're #{1 + (matchedToday(data.zone) % 4)} in Aayushi's queue. We have everything we need to start.
                       </p>
                     </Bubble>
+
+                    <MatchPreview zone={data.zone} name={data.name} />
+
+                    <MovePlanCard
+                      name={data.name}
+                      zone={data.zone}
+                      tier={data.budget}
+                      moveIn={data.movein ? L_MOVEIN[data.movein] : undefined}
+                      vibes={[
+                        ...(data.matters ?? []).slice(0, 3),
+                        ...(data.gender ? [L_GENDER[data.gender]] : []),
+                      ]}
+                    />
 
                     <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 space-y-3">
                       <div className="flex items-start gap-3">
