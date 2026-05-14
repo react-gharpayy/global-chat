@@ -418,31 +418,52 @@ const L_GENDER: Record<string,string> = { boys:"Male PG", girls:"Female PG", coe
 const L_WORRY: Record<string,string> = { deposit:"Deposit security", bad_exp:"Past bad experience", budget_unsure:"Budget uncertainty", parents:"Parents' comfort", visit:"In-person visit needed", deciding:"Comparing options", ready:"Ready to move fast" };
 const L_VISIT: Record<string,string> = { visit:"Wants a visit / VR tour", prebook:"Wants to pre-book", skip:"Call first" };
 const L_VISIT_WHEN: Record<string,string> = { today:"Today/tomorrow", thisweek:"This week", weekend:"This weekend", nextweek:"Next week+" };
+const L_RADIUS: Record<string,string> = { walk:"Walking (~1 km)", short:"Short ride (1-3 km)", "5km":"Up to 5 km", "10km":"Up to 10 km", any:"Anywhere in zone" };
+const L_FOOD: Record<string,string> = { included:"Food included", extra:"Food extra is fine" };
+
+function exactBudgetLabel(d: Data): string | undefined {
+  const v = d.budget_exact === "custom" ? d.food_pref && "" : d.budget_exact;
+  const num = d.budget_exact === "custom" ? "" : d.budget_exact;
+  if (d.budget_exact === "flex") return "Flexible inside tier";
+  if (d.budget_exact === "custom") return undefined;
+  return num ? `ceiling ${fmtINR(num)}/mo` : undefined;
+  void v;
+}
 
 function buildMsg(d: Data, elapsed: number): string {
   const lines: string[] = [];
-  lines.push("*GHARPAYY* New Lead ⚡");
+  lines.push("*GHARPAYY* New Lead");
   lines.push("————————————————");
   lines.push(`📝 *Name:* ${d.name || "-"}`);
   lines.push(`📱 *Phone:* ${d.phone || "-"}`);
   lines.push("");
-  if (d.intent) lines.push(`🎯 *Looking for:* ${L_INTENT[d.intent] || d.intent}`);
-  if (d.story) lines.push(`📌 *Situation:* ${L_STORY[d.story] || d.story}`);
-  if (d.in_blr) lines.push(`📍 *In BLR:* ${d.in_blr === "yes" ? "Yes" : "No"}`);
-  if (d.curr_stay) lines.push(`🏠 *Currently in:* ${L_CURR[d.curr_stay]}`);
-  if (d.notice) lines.push(`📋 *Notice:* ${L_NOTICE[d.notice]}`);
-  if (d.arrival) lines.push(`✈️ *Arriving:* ${L_ARRIVAL[d.arrival]}`);
-  if (d.movein) lines.push(`📆 *Move-in:* ${L_MOVEIN[d.movein]}`);
+  if (d.intent) lines.push(`*Looking for:* ${L_INTENT[d.intent] || d.intent}`);
+  if (d.story) lines.push(`*Situation:* ${L_STORY[d.story] || d.story}`);
+  if (d.in_blr) lines.push(`*In BLR:* ${d.in_blr === "yes" ? "Yes" : "No"}`);
+  if (d.curr_stay) lines.push(`*Currently in:* ${L_CURR[d.curr_stay]}`);
+  if (d.notice) lines.push(`*Notice:* ${L_NOTICE[d.notice]}`);
+  if (d.arrival) lines.push(`*Arriving:* ${L_ARRIVAL[d.arrival]}`);
+  if (d.movein) lines.push(`*Move-in:* ${L_MOVEIN[d.movein]}`);
   if (d.zone) lines.push(`🗺️ *Zone:* ${L_ZONE[d.zone]}`);
-  if (d.workplace) lines.push(`🏢 *Workplace:* ${d.workplace}`);
-  if (d.budget) lines.push(`💰 *Tier:* ${L_BUDGET[d.budget]}/month`);
-  if (d.room) lines.push(`🛏️ *Room:* ${L_ROOM[d.room]}`);
-  if (d.gender) lines.push(`👤 *For:* ${L_GENDER[d.gender]}`);
-  if (d.matters?.length) lines.push(`\n✨ *Must-haves:* ${d.matters.join(", ")}`);
-  if (d.matters_other) lines.push(`✨ *Also:* ${d.matters_other}`);
-  if (d.dealbreakers?.length) lines.push(`🚫 *Deal-breakers:* ${d.dealbreakers.join(", ")}`);
-  if (d.worry) lines.push(`\n💬 *Concern:* ${L_WORRY[d.worry]}`);
-  if (d.visit) lines.push(`🚪 *Next action:* ${L_VISIT[d.visit]}${d.visit_when ? ` - ${L_VISIT_WHEN[d.visit_when]}` : ""}`);
+  if (d.areas?.length || d.area_other) lines.push(`*Areas:* ${[...(d.areas || []), d.area_other].filter(Boolean).join(", ")}`);
+  if (d.radius) lines.push(`*Radius:* ${L_RADIUS[d.radius]}`);
+  if (d.special_req) lines.push(`*Special:* ${d.special_req}`);
+  if (d.workplace) lines.push(`*Workplace:* ${d.workplace}`);
+  if (d.budget) {
+    const ex = d.budget_exact === "flex" ? "flexible inside tier"
+      : d.budget_exact === "custom" ? (d.budget_exact_custom ? `ceiling ${fmtINR(d.budget_exact_custom)}/mo` : "")
+      : d.budget_exact ? `ceiling ${fmtINR(d.budget_exact)}/mo` : "";
+    const food = d.food_pref ? L_FOOD[d.food_pref] : "";
+    const tail = [ex, food].filter(Boolean).join(" · ");
+    lines.push(`💰 *Budget:* ${L_BUDGET[d.budget]}${tail ? ` · ${tail}` : ""}`);
+  }
+  if (d.room) lines.push(`*Room:* ${L_ROOM[d.room]}`);
+  if (d.gender) lines.push(`*For:* ${L_GENDER[d.gender]}`);
+  if (d.matters?.length) lines.push(`\n*Must-haves:* ${d.matters.join(", ")}`);
+  if (d.matters_other) lines.push(`*Also:* ${d.matters_other}`);
+  if (d.dealbreakers?.length) lines.push(`*Deal-breakers:* ${d.dealbreakers.join(", ")}`);
+  if (d.worry) lines.push(`\n*Concern:* ${L_WORRY[d.worry]}`);
+  if (d.visit) lines.push(`*Next action:* ${L_VISIT[d.visit]}${d.visit_when ? ` - ${L_VISIT_WHEN[d.visit_when]}` : ""}`);
   lines.push("————————————————");
   lines.push(`via Gharpayy expert${elapsed ? ` · ${elapsed}s` : ""}`);
   lines.push("Reply within 30 mins.");
@@ -453,15 +474,24 @@ function buildMsg(d: Data, elapsed: number): string {
 function echoFor(step: StepId, d: Data): string | null {
   const s = STEPS[step];
   if (step === "welcome") return d.intent ? L_INTENT[d.intent] : null;
-  if (step === "name") return d.name ? `👋 ${d.name}` : null;
+  if (step === "name") return d.name ? `${d.name}` : null;
   if (step === "visit") {
     return d.visit ? `${L_VISIT[d.visit]}` : null;
+  }
+  if (step === "zone_areas") {
+    const a = [...(d.areas || []), d.area_other].filter(Boolean);
+    return a.length ? a.map(x => `✓ ${x}`).join("  ") : null;
+  }
+  if (step === "budget_exact") {
+    if (d.budget_exact === "flex") return "Flexible inside tier";
+    if (d.budget_exact === "custom") return d.budget_exact_custom ? `Ceiling ${fmtINR(d.budget_exact_custom)}/mo` : null;
+    return d.budget_exact ? `Ceiling ${fmtINR(d.budget_exact)}/mo${d.food_pref ? ` · ${L_FOOD[d.food_pref]}` : ""}` : null;
   }
   if (!s) return null;
   if (s.type === "choice") {
     const v = (d as Record<string, unknown>)[s.key] as string | undefined;
     const opt = s.opts.find(o => o.v === v);
-    return opt ? `${opt.e} ${opt.t}` : null;
+    return opt ? `${opt.e ? opt.e + " " : ""}${opt.t}` : null;
   }
   if (s.type === "text") {
     const v = (d as Record<string, unknown>)[s.key] as string | undefined;
@@ -485,9 +515,9 @@ function insightFor(step: StepId, d: Data): string | null {
 
 // Live social-proof line for completed steps
 function proofFor(step: StepId, d: Data): string | null {
-  if (step === "zone" && d.zone) return `📊 ${matchedToday(d.zone)} people from your zone matched this week.`;
-  if (step === "budget" && d.budget && d.zone) return `🔥 Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
-  if (step === "visit" && d.visit === "visit") return `🚪 ${visitsBookedToday()} visits already booked today.`;
+  if (step === "zone" && d.zone) return `${matchedToday(d.zone)} people from your zone matched this week.`;
+  if (step === "budget" && d.budget && d.zone) return `Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
+  if (step === "visit" && d.visit === "visit") return `${visitsBookedToday()} visits already booked today.`;
   return null;
 }
 
