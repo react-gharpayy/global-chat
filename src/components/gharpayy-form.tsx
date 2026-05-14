@@ -280,7 +280,7 @@ const STEPS: Record<StepId, Step> = {
     q: (() => "")(),
     qs: "",
     opts: [],
-    next: (d) => d.visit === "skip" ? "contact" : "visit_when",
+    next: (d: Data) => d.visit === "skip" ? "contact" : "visit_when",
   } as unknown as Step,
 
   visit_when: {
