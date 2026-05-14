@@ -497,6 +497,7 @@ export default function GharpayyForm() {
   }, [history]);
 
   const setIntent = (v: string) => {
+    tap();
     setData(d => ({ ...d, intent: v }));
     if (!tStart) setTStart(Date.now());
     setHistory(h => [...h, "welcome"]);
@@ -504,6 +505,7 @@ export default function GharpayyForm() {
   };
 
   const pickChoice = (key: string, v: string) => {
+    tap();
     setData(d => {
       const next = { ...d, [key]: v };
       const s = STEPS[cur];
@@ -519,6 +521,7 @@ export default function GharpayyForm() {
 
   // Special pick for the dynamic visit step
   const pickVisit = (v: string) => {
+    tap();
     setData(d => {
       const next = { ...d, visit: v };
       setTimeout(() => {
@@ -530,6 +533,7 @@ export default function GharpayyForm() {
   };
 
   const toggleMulti = (key: string, v: string, max: number) => {
+    tap();
     setData(d => {
       const arr = (d as Record<string, unknown>)[key] as string[] | undefined || [];
       const i = arr.indexOf(v);
@@ -541,6 +545,7 @@ export default function GharpayyForm() {
 
   const submitName = () => {
     if (!data.name?.trim()) return;
+    tap();
     setHistory(h => [...h, "name"]);
     setCur("matters");
   };
@@ -549,8 +554,14 @@ export default function GharpayyForm() {
     if ((data.phone || "").replace(/\D/g, "").length < 10) return;
     setElapsed(tStart ? Math.round((Date.now() - tStart) / 1000) : 0);
     setHistory(h => [...h, "contact"]);
-    setCur("reveal");
+    setSubmitting(true);
   };
+
+  const finishSubmit = useCallback(() => {
+    success();
+    setSubmitting(false);
+    setCur("reveal");
+  }, []);
 
   const restart = () => {
     setData({}); setHistory([]); setCur("welcome"); setTStart(null); setElapsed(0);
