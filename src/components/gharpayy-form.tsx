@@ -970,6 +970,9 @@ export default function GharpayyForm() {
                 {STEPS[cur].type === "multi" && (() => {
                   const s = STEPS[cur] as Extract<Step, { type: "multi" }>;
                   const arr = ((data as Record<string, unknown>)[s.key] as string[]) || [];
+                  const isAreas = cur === "zone_areas";
+                  const opts = isAreas ? (ZONE_AREAS[data.zone || ""] || []) : s.opts;
+                  const otherTarget: StepId | null = cur === "matters" ? "matters_other" : null;
                   return (
                     <>
                       <Bubble side="in" delay={0.05}>
@@ -978,7 +981,7 @@ export default function GharpayyForm() {
                       </Bubble>
                       <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
                         <div className="flex flex-wrap gap-1.5">
-                          {s.opts.map(o => {
+                          {opts.map(o => {
                             const on = arr.includes(o);
                             const disabled = !on && arr.length >= s.max;
                             return (
@@ -990,25 +993,36 @@ export default function GharpayyForm() {
                               </button>
                             );
                           })}
-                          {s.allowOther && (
+                          {s.allowOther && otherTarget && (
                             <button type="button"
-                              onClick={() => { setHistory(h => [...h, cur]); setCur("matters_other"); }}
+                              onClick={() => { setHistory(h => [...h, cur]); setCur(otherTarget); }}
                               className="px-3 py-1.5 rounded-full text-[12.5px] font-medium border border-dashed border-[#128C7E]/40 text-[#128C7E] bg-[#25D366]/5 hover:bg-[#25D366]/10">
                               + Write your own
                             </button>
                           )}
                         </div>
+                        {isAreas && (
+                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] block mb-1">+ Add another area</label>
+                            <input type="text" placeholder="e.g. Kasavanahalli, Bagmane Tech Park"
+                              value={data.area_other || ""}
+                              onChange={e => setData(d => ({ ...d, area_other: e.target.value }))}
+                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+                          </div>
+                        )}
                         <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
                           {arr.length} of {s.max} selected
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <button type="button" onClick={() => advance()}
-                          className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
-                          Skip
-                        </button>
+                        {s.optional && (
+                          <button type="button" onClick={() => advance()}
+                            className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
+                            Skip
+                          </button>
+                        )}
                         <ContinueBtn
-                          disabled={!s.optional && arr.length === 0}
+                          disabled={!s.optional && arr.length === 0 && !(isAreas && (data.area_other || "").trim().length > 0)}
                           onClick={() => advance()}
                           className="flex-1"
                         />
