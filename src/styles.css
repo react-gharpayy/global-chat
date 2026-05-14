@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -31,55 +32,64 @@
   --color-ring: oklch(var(--ring));
   --color-gold: oklch(var(--gold));
   --color-gold-foreground: oklch(var(--gold-foreground));
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-gold: var(--brand-gold);
+  --color-wa-green: var(--wa-green);
+  --color-wa-dark: var(--wa-dark);
   --color-surface-glass: var(--surface-glass);
   --color-surface-glass-border: var(--surface-glass-border);
   --color-surface-glass-gold: var(--surface-glass-gold);
   --color-surface-glass-gold-border: var(--surface-glass-gold-border);
   --font-sans: 'Inter', sans-serif;
+  --font-display: 'Playfair Display', serif;
 }
 
 :root {
   --radius: 0.875rem;
-  /* WhatsApp chat cream */
+  --brand-blue: #1F47BA;
+  --brand-blue-deep: #0F2F8A;
+  --brand-navy: #0A1A3D;
+  --brand-gold: #FFC72C;
+  --brand-gold-deep: #E5A800;
+  --wa-green: #25D366;
+  --wa-dark: #075E54;
+  --wa-teal: #128C7E;
+  --wa-bubble: #DCF8C6;
+  --wa-chat-bg: #ECE5DD;
+
   --background: 0.93 0.012 90;
   --foreground: 0.20 0.015 240;
   --border: 0.88 0.012 90;
   --input: 0.96 0.005 90;
-  --ring: 0.62 0.16 155;
-  /* Bubbles */
+  --ring: 0.45 0.20 265;
   --card: 1 0 0;
   --card-foreground: 0.20 0.015 240;
   --popover: 1 0 0;
   --popover-foreground: 0.20 0.015 240;
-  /* WhatsApp green primary */
-  --primary: 0.62 0.16 155;
+  --primary: 0.45 0.20 265;
   --primary-foreground: 1 0 0;
-  --secondary: 0.92 0.06 150;
-  --secondary-foreground: 0.30 0.05 155;
+  --secondary: 0.92 0.06 250;
+  --secondary-foreground: 0.30 0.10 265;
   --muted: 0.94 0.005 90;
   --muted-foreground: 0.50 0.01 240;
-  --accent: 0.92 0.06 150;
-  --accent-foreground: 0.30 0.05 155;
+  --accent: 0.85 0.18 85;
+  --accent-foreground: 0.18 0.05 265;
   --destructive: 0.55 0.22 25;
   --destructive-foreground: 0.98 0 0;
-  /* "Gold" tokens repurposed as WhatsApp green for legacy class compat */
-  --gold: 0.62 0.16 155;
-  --gold-foreground: 1 0 0;
-  /* Bubble surfaces */
+  --gold: 0.85 0.18 85;
+  --gold-foreground: 0.18 0.05 265;
   --surface-glass: #ffffff;
   --surface-glass-border: rgba(15,23,42,0.06);
-  --surface-glass-gold: #DCF8C6;
-  --surface-glass-gold-border: rgba(37,211,102,0.25);
+  --surface-glass-gold: #FFF6D9;
+  --surface-glass-gold-border: rgba(255,199,44,0.4);
 }
 
-.dark {
-  --background: 0.20 0.015 240;
-  --foreground: 0.95 0.005 90;
-}
+.dark { --background: 0.20 0.015 240; --foreground: 0.95 0.005 90; }
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { background: #075E54; }
+  html { background: var(--brand-navy); }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -88,9 +98,8 @@
   }
 }
 
-/* ─── WhatsApp chat doodle background ─── */
 .wa-chat-bg {
-  background-color: #ECE5DD;
+  background-color: var(--wa-chat-bg);
   background-image:
     radial-gradient(circle at 20% 30%, rgba(7,94,84,0.04) 0, rgba(7,94,84,0) 22px),
     radial-gradient(circle at 70% 65%, rgba(7,94,84,0.04) 0, rgba(7,94,84,0) 28px),
@@ -100,56 +109,52 @@
 }
 
 .wa-header {
-  background: #075E54;
+  background: linear-gradient(180deg, var(--wa-dark), #064a42);
   color: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 
-.wa-header-light {
-  background: #128C7E;
-  color: #fff;
-}
-
-/* Bubble: incoming from Gharpayy */
 .bubble-in {
-  background: #FFFFFF;
-  color: #111B21;
-  border-radius: 0 12px 12px 12px;
+  background: #FFFFFF; color: #111B21;
+  border-radius: 0 14px 14px 14px;
   box-shadow: 0 1px 0.5px rgba(11,20,26,0.13);
   position: relative;
 }
 .bubble-in::before {
-  content: "";
-  position: absolute;
-  top: 0; left: -8px;
-  width: 12px; height: 13px;
-  background: #FFFFFF;
+  content: ""; position: absolute; top: 0; left: -8px;
+  width: 12px; height: 13px; background: #FFFFFF;
   clip-path: polygon(100% 0, 100% 100%, 0 0);
 }
-
-/* Bubble: outgoing user */
 .bubble-out {
-  background: #DCF8C6;
-  color: #111B21;
-  border-radius: 12px 0 12px 12px;
+  background: var(--wa-bubble); color: #111B21;
+  border-radius: 14px 0 14px 14px;
   box-shadow: 0 1px 0.5px rgba(11,20,26,0.13);
   position: relative;
 }
 .bubble-out::before {
-  content: "";
-  position: absolute;
-  top: 0; right: -8px;
-  width: 12px; height: 13px;
-  background: #DCF8C6;
+  content: ""; position: absolute; top: 0; right: -8px;
+  width: 12px; height: 13px; background: var(--wa-bubble);
   clip-path: polygon(0 0, 0 100%, 100% 0);
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+.bubble-insight {
+  background: linear-gradient(135deg, #FFF6D9, #FFE8A3);
+  border: 1px solid rgba(255,199,44,0.5);
+  color: #5A3A00;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(255,199,44,0.18);
 }
 
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes bubble-pop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.92); }
+  60% { transform: translateY(-2px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bubble-pop { animation: bubble-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
 .shimmer-text {
-  background: linear-gradient(90deg, #128C7E 0%, #25D366 50%, #128C7E 100%);
+  background: linear-gradient(90deg, var(--brand-gold-deep) 0%, var(--brand-gold) 50%, var(--brand-gold-deep) 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -158,40 +163,81 @@
 }
 
 .gold-gradient-text {
-  background: linear-gradient(90deg, #128C7E 0%, #25D366 60%, #128C7E 100%);
+  background: linear-gradient(90deg, var(--brand-blue-deep), var(--brand-blue) 60%, var(--brand-blue-deep));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-gradient-text {
+  background: linear-gradient(90deg, var(--brand-blue), var(--brand-blue-deep) 60%, #5179E0);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, #25D366, #128C7E);
-  color: #ffffff;
-  font-weight: 700;
-  border: none;
-  border-radius: 999px;
-  box-shadow: 0 6px 18px rgba(37,211,102,0.32);
-  transition: all 0.2s ease;
+  position: relative;
+  background: linear-gradient(135deg, #2dd96d 0%, var(--wa-green) 50%, var(--wa-teal) 100%);
+  color: #ffffff; font-weight: 700; border: none; border-radius: 999px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.25) inset,
+    0 -2px 0 rgba(0,0,0,0.12) inset,
+    0 8px 22px rgba(37,211,102,0.38),
+    0 2px 6px rgba(7,94,84,0.18);
+  transition: transform 0.18s cubic-bezier(.4,0,.2,1), box-shadow 0.18s ease;
+  overflow: hidden;
+}
+.btn-gold::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
 }
 .btn-gold:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(37,211,102,0.45);
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.35) inset,
+    0 -2px 0 rgba(0,0,0,0.15) inset,
+    0 14px 28px rgba(37,211,102,0.5),
+    0 4px 10px rgba(7,94,84,0.22);
 }
-.btn-gold:disabled { opacity: 0.6; }
+.btn-gold:hover::before { transform: translateX(100%); }
+.btn-gold:active { transform: translateY(0); }
+.btn-gold:disabled { opacity: 0.6; transform: none; }
 
-.glass-surface {
-  background: var(--surface-glass);
-  border: 1px solid var(--surface-glass-border);
-  box-shadow: 0 1px 0.5px rgba(11,20,26,0.08);
+.btn-brand {
+  position: relative;
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-deep));
+  color: #fff; border: none; border-radius: 999px; font-weight: 700;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.20) inset,
+    0 -2px 0 rgba(0,0,0,0.18) inset,
+    0 8px 22px rgba(31,71,186,0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
+.btn-brand:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 -2px 0 rgba(0,0,0,0.2) inset, 0 14px 28px rgba(31,71,186,0.5); }
+.btn-brand:active { transform: translateY(0); }
 
-.glass-surface-gold {
-  background: var(--surface-glass-gold);
-  border: 1px solid var(--surface-glass-gold-border);
+.btn-outline-wa {
+  background: #ffffff; color: var(--wa-teal);
+  border: 1.5px solid var(--wa-green);
+  border-radius: 999px; font-weight: 700;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37,211,102,0.12);
 }
+.btn-outline-wa:hover { background: #F0FDF4; transform: translateY(-1px); box-shadow: 0 6px 14px rgba(37,211,102,0.2); }
+
+.glass-surface { background: var(--surface-glass); border: 1px solid var(--surface-glass-border); box-shadow: 0 1px 0.5px rgba(11,20,26,0.08); }
+.glass-surface-gold { background: var(--surface-glass-gold); border: 1px solid var(--surface-glass-gold-border); }
+
+.phone-frame {
+  background: #000; border-radius: 28px; padding: 6px;
+  box-shadow: 0 0 0 1px #2a2a2a, 0 20px 50px rgba(0,0,0,0.35), 0 8px 16px rgba(0,0,0,0.18);
+}
+.phone-screen { border-radius: 22px; overflow: hidden; background: var(--wa-chat-bg); }
 
 @layer utilities {
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0.6;
-  }
+  input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; }
 }
