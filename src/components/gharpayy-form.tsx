@@ -4,7 +4,7 @@ import {
   ArrowRight, Check, Phone, Home as HomeIcon,
   MessageCircle, Send, Zap, Copy, RotateCcw, Lock, Users, Sparkles,
 } from "lucide-react";
-import { ChatHeader } from "@/components/form-ui";
+import { ChatHeader, useTheme } from "@/components/form-ui";
 import { TypingDots, ReadTick } from "@/components/typing-dots";
 import { TrustRing } from "@/components/trust-ring";
 // (MatchPreview intentionally not rendered on reveal — see plan)
