@@ -1285,3 +1285,252 @@ function summaryRows(d: Data): [string, string][] {
   ];
   return rows.filter(([, v]) => v).map(([k, v]) => [k, v as string]);
 }
+
+// ─── Auto-advance pill (saved · moving on…) ──────────────────────────
+function AutoAdvancePill({ label = "Saved · moving on…" }: { label?: string }) {
+  return (
+    <div className="self-center px-3 py-1.5 rounded-full bg-[#25D366]/10 border border-[#25D366]/30 text-[11px] font-semibold text-[#128C7E] flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+      {label}
+    </div>
+  );
+}
+
+// ─── BUDGET EXACT block ──────────────────────────────────────────────
+function BudgetExactBlock({
+  data, setData, onAdvance, stepNumber, total,
+}: {
+  data: Data;
+  setData: React.Dispatch<React.SetStateAction<Data>>;
+  onAdvance: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const tier = data.budget || "basic";
+  const opts = BUDGET_EXACT_OPTS[tier] || [];
+  const tierLabel = L_BUDGET[tier] || "this tier";
+  const isCustom = data.budget_exact === "custom";
+  const ready = !!data.budget_exact && (!isCustom || (data.budget_exact_custom || "").length >= 3);
+  useAutoAdvance(`${data.budget_exact}|${data.budget_exact_custom}|${data.food_pref}`, ready, onAdvance, isCustom ? 1100 : 800);
+  return (
+    <>
+      <QuestionCard q={`Real monthly ceiling inside ${tierLabel}?`}
+        qs="Honest number means we only show stays that fit. One tap saves a 20-min back-and-forth call later."
+        stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Tap your number</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <div className="flex flex-wrap gap-1.5">
+          {opts.map(n => {
+            const on = data.budget_exact === n;
+            return (
+              <button key={n} type="button"
+                onClick={() => { tap(); setData(d => ({ ...d, budget_exact: n, budget_exact_custom: undefined })); }}
+                className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                {fmtINR(n)}
+              </button>
+            );
+          })}
+          <button type="button"
+            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "flex", budget_exact_custom: undefined })); }}
+            className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${data.budget_exact === "flex" ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#128C7E] border-[#25D366]/40 hover:bg-[#25D366]/10"}`}>
+            Flexible inside tier
+          </button>
+          <button type="button"
+            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "custom" })); }}
+            className={`px-3 py-2 rounded-full text-[13px] font-semibold border border-dashed transition-all ${isCustom ? "bg-[#25D366]/10 text-[#128C7E] border-[#128C7E]" : "text-[#128C7E] border-[#128C7E]/40 hover:bg-[#25D366]/5"}`}>
+            + Set my own number
+          </button>
+        </div>
+        {isCustom && (
+          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+            <input type="number" inputMode="numeric" placeholder="e.g. 18500" autoFocus
+              value={data.budget_exact_custom || ""}
+              onChange={e => setData(d => ({ ...d, budget_exact_custom: e.target.value.replace(/\D/g, "") }))}
+              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+            <p className="text-[10.5px] text-[#667781] mt-1.5">Per month, in rupees.</p>
+          </div>
+        )}
+        <div className="mt-3 pt-2.5 border-t border-black/5">
+          <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] mb-1.5">Food</p>
+          <div className="flex gap-1.5">
+            {(["included","extra"] as const).map(f => {
+              const on = data.food_pref === f;
+              return (
+                <button key={f} type="button"
+                  onClick={() => { tap(); setData(d => ({ ...d, food_pref: on ? undefined : f })); }}
+                  className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366]"}`}>
+                  {on && "✓ "}{L_FOOD[f]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      {ready && <AutoAdvancePill />}
+    </>
+  );
+}
+
+// ─── TEXT block (auto-advance after 900ms idle) ──────────────────────
+function TextBlock({
+  step, val, inputRef, onChange, onAdvance, stepNumber, total,
+}: {
+  step: Extract<Step, { type: "text" }>;
+  val: string | undefined;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onChange: (v: string) => void;
+  onAdvance: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const minLen = step.optional ? 1 : 2;
+  const ready = (val || "").trim().length >= minLen;
+  useAutoAdvance(val, ready, onAdvance, 900);
+  return (
+    <>
+      <QuestionCard q={step.q} qs={step.qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Type your answer</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <input ref={inputRef} type="text"
+          placeholder={step.ph}
+          value={val || ""}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && (val || "").length > 1) onAdvance(); }}
+          className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+        {step.chips && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-black/5">
+            {step.chips.map(c => (
+              <button key={c} type="button"
+                onClick={() => onChange(c)}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 transition-colors">
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {ready ? <AutoAdvancePill /> : (
+        step.optional && (
+          <button type="button" onClick={onAdvance}
+            className="self-center text-[11.5px] text-[#667781] hover:text-[#25D366] py-1.5 px-3 rounded-full transition-colors">
+            Skip →
+          </button>
+        )
+      )}
+    </>
+  );
+}
+
+// ─── NAME block (auto-advance after 900ms idle) ──────────────────────
+function NameBlock({
+  q, qs, name, inputRef, onChange, onSubmit, stepNumber, total,
+}: {
+  q: string; qs: string;
+  name: string | undefined;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const ready = (name || "").trim().length >= 1;
+  useAutoAdvance(name, ready, onSubmit, 900);
+  return (
+    <>
+      <QuestionCard q={q} qs={qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Type your first name</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <input ref={inputRef} type="text"
+          placeholder="First name"
+          value={name || ""}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && ready) onSubmit(); }}
+          className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+      </div>
+      {ready && <AutoAdvancePill />}
+    </>
+  );
+}
+
+// ─── MULTI block (live countdown after last toggle) ──────────────────
+function MultiBlock({
+  step, arr, opts, isAreas, areaOther, setAreaOther, onToggle, onWriteOther, onAdvance, stepNumber, total,
+}: {
+  step: Extract<Step, { type: "multi" }>;
+  arr: string[];
+  opts: string[];
+  isAreas: boolean;
+  areaOther: string;
+  setAreaOther: (v: string) => void;
+  onToggle: (v: string) => void;
+  onWriteOther?: () => void;
+  onAdvance: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const ready = arr.length > 0 || (isAreas && areaOther.trim().length > 0);
+  // 2.5s window after any change; reset on each toggle / area_other edit
+  const [countdown, setCountdown] = useState(0);
+  useEffect(() => {
+    if (!ready) { setCountdown(0); return; }
+    setCountdown(3);
+    const t1 = setTimeout(() => setCountdown(2), 800);
+    const t2 = setTimeout(() => setCountdown(1), 1600);
+    const t3 = setTimeout(() => { setCountdown(0); onAdvance(); }, 2500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arr.join("|"), areaOther]);
+  return (
+    <>
+      <QuestionCard q={step.q} qs={step.qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Tap any that apply</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <div className="flex flex-wrap gap-1.5">
+          {opts.map(o => {
+            const on = arr.includes(o);
+            const disabled = !on && arr.length >= step.max;
+            return (
+              <button key={o} type="button"
+                disabled={disabled}
+                onClick={() => onToggle(o)}
+                className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : disabled ? "bg-black/5 text-black/30 border-transparent cursor-not-allowed" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                {on && "✓ "}{o}
+              </button>
+            );
+          })}
+          {step.allowOther && onWriteOther && (
+            <button type="button"
+              onClick={onWriteOther}
+              className="px-3 py-1.5 rounded-full text-[12.5px] font-medium border border-dashed border-[#128C7E]/40 text-[#128C7E] bg-[#25D366]/5 hover:bg-[#25D366]/10">
+              + Write your own
+            </button>
+          )}
+        </div>
+        {isAreas && (
+          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+            <label className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] block mb-1">+ Add another area</label>
+            <input type="text" placeholder="e.g. Kasavanahalli, Bagmane Tech Park"
+              value={areaOther}
+              onChange={e => setAreaOther(e.target.value)}
+              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+          </div>
+        )}
+        <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
+          {arr.length} of {step.max} selected
+        </p>
+      </div>
+      {ready && countdown > 0 ? (
+        <button type="button" onClick={onAdvance}
+          className="self-center px-3 py-1.5 rounded-full bg-[#25D366]/10 border border-[#25D366]/30 text-[11px] font-semibold text-[#128C7E] flex items-center gap-1.5 hover:bg-[#25D366]/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+          Auto-continuing in {countdown}… (tap to skip wait)
+        </button>
+      ) : step.optional && !ready ? (
+        <button type="button" onClick={onAdvance}
+          className="self-center text-[11.5px] text-[#667781] hover:text-[#25D366] py-1.5 px-3 rounded-full transition-colors">
+          Skip →
+        </button>
+      ) : null}
+    </>
+  );
+}
