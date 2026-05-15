@@ -16,16 +16,15 @@ import { tap, success } from "@/lib/haptics";
 const GHARPAYY_WA = "917988114576";
 const GHARPAYY_WA_DISPLAY = "+91 79881 14576";
 
-// Per-zone & student WhatsApp numbers. Replace the zone numbers with your real
-// zone-manager lines whenever you have them — student is the one you provided.
+// Per-zone & student WhatsApp numbers — real lines from the Gharpayy team.
 const ZONE_WA: Record<string, { wa: string; display: string; label: string; sub: string }> = {
-  east:    { wa: "917988114576", display: "+91 79881 14576", label: "East zone — Whitefield",        sub: "ITPL · Brookfield · Marathalli" },
-  orr:     { wa: "917988114576", display: "+91 79881 14576", label: "ORR zone — Bellandur",          sub: "Sarjapur · Embassy Tech · RMZ" },
-  north:   { wa: "917988114576", display: "+91 79881 14576", label: "North zone — Manyata",          sub: "Hebbal · Hennur · Yelahanka" },
-  central: { wa: "917988114576", display: "+91 79881 14576", label: "Central zone — Koramangala",    sub: "Indiranagar · MG Road · Domlur" },
-  south:   { wa: "917988114576", display: "+91 79881 14576", label: "South zone — Electronic City",  sub: "BTM · JP Nagar · Bommanahalli" },
+  central: { wa: "918307396042", display: "+91 83073 96042", label: "Central zone — Koramangala",       sub: "Koramangala · S.G. Palya · Adugodi · Dairy Circle · Forum · MG Road · HSR" },
+  orr:     { wa: "916363607724", display: "+91 63636 07724", label: "ORR zone — Bellandur / EcoWorld",   sub: "Marathahalli · Bellandur · Kadubeesanahalli · Sarjapur Rd · Mahadevapura" },
+  east:    { wa: "916363607724", display: "+91 63636 07724", label: "East zone — Whitefield / ITPL",     sub: "Brookfield · Hoodi · Kundalahalli · ITPL · EPIP · Kadugodi · PMC" },
+  north:   { wa: "918431513647", display: "+91 84315 13647", label: "North zone — Manyata",              sub: "Nagawara · Hebbal · Thanisandra · Mathikere" },
+  south:   { wa: "917988114576", display: "+91 79881 14576", label: "Anywhere in Bangalore desk",        sub: "Yeshwanthpur · Peenya · UB City · Bagmane · WTC · Electronic City" },
 };
-const STUDENT_WA = { wa: "919118388864", display: "+91 91183 88864", label: "Student desk", sub: "College & university stays" };
+const STUDENT_WA = { wa: "919118388864", display: "+91 91183 88864", label: "Student desk — all colleges", sub: "Christ · Jain · MCC · St Joseph · PES · IIM-B · RV · MSRIT" };
 
 // ─── Types ───────────────────────────────────────────────────────────
 type StepId =
