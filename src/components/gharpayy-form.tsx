@@ -523,7 +523,7 @@ function insightFor(step: StepId, d: Data): string | null {
 
 // Live social-proof line for completed steps
 function proofFor(step: StepId, d: Data): string | null {
-  if (step === "zone" && d.zone) return `${matchedToday(d.zone)} people from your zone matched this week.`;
+  if (step === "zone" && d.zone) return `${matchedToday(d.zone)} people from your zone moved into a Gharpayy home this week.`;
   if (step === "budget" && d.budget && d.zone) return `Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
   if (step === "visit" && d.visit === "visit") return `${visitsBookedToday()} visits already booked today.`;
   return null;
