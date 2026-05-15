@@ -411,12 +411,12 @@ const VISIT_DYNAMIC = (d: Data) => {
 
 // ─── Labels ──────────────────────────────────────────────────────────
 const L_INTENT: Record<string,string> = { perfect:"Most homely stay", budget:"Most affordable", nearby:"Close to office/college", safe:"Safety & trust priority" };
-const L_STORY: Record<string,string> = { newjob:"New job/college start", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
+const L_STORY: Record<string,string> = { newjob:"New job/college start", student:"Student", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
 const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"PG/hostel", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT - not settled" };
 const L_NOTICE: Record<string,string> = { given:"Notice given", not_yet:"Not yet", difficult:"Complicated", free:"No contract" };
 const L_ARRIVAL: Record<string,string> = { thisweek:"This week", thismonth:"This month", nextmonth:"Next month", later:"2-3 months out" };
 const L_MOVEIN: Record<string,string> = { now:"ASAP - urgent","2wk":"Within 2 weeks", month:"Month-end", next:"Next month or later" };
-const L_ZONE: Record<string,string> = { east:"East (Whitefield belt)", orr:"ORR (Bellandur)", north:"North (Manyata belt)", central:"Central (Koramangala/Vasanth Nagar)", south:"South (Electronic City)" };
+const L_ZONE: Record<string,string> = { east:"East zone (Whitefield)", orr:"ORR zone (Bellandur)", north:"North zone (Manyata)", central:"Central zone (Koramangala/Vasanth Nagar)", south:"South zone (Electronic City)" };
 const L_BUDGET: Record<string,string> = { basic:"BASIC ₹7k-11k", classic:"CLASSIC ₹12k-17k", prive:"PRIVE ₹17k-26k", luxemax:"LUXE MAX ₹25k-45k" };
 const L_ROOM: Record<string,string> = { private:"Private room", double:"Double sharing", triple:"Triple sharing", flex:"Best deal (flexible)" };
 const L_GENDER: Record<string,string> = { boys:"Male PG", girls:"Female PG", coed:"Coed", couple:"Couple" };
