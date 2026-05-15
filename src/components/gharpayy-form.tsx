@@ -97,7 +97,7 @@ const fmtINR = (n: string | number) => {
 
 // ─── Insights — vibe & community of each zone (no rent talk) ─────────
 const ZONE_INSIGHT: Record<string, string> = {
-  east:    "We have full live properties across this zone — Whitefield, Brookfield, Marathalli, Mahadevapura. ITPL/EPIP crowd, Phoenix on weekends. Strong waitlist, so worth locking early.",
+  east:    "We host across this whole zone — Whitefield, Brookfield, Marathalli, Mahadevapura. ITPL/EPIP crowd, Phoenix on weekends. Strong waitlist, so worth locking early.",
   orr:    "Bellandur is one of our flagship zones. Lake-view mornings, ORR tech-park afternoons. Most residents here are mid/senior engineers from Wipro, Cisco, Accenture.",
   north:  "Nagawara + Manyata is our quietest, greenest zone. Walk-to-IBM-Manyata residents, Hebbal lake nearby, very low noise floors.",
   central: "Koramangala + Vasanth Nagar — founders, designers, creatives. Walk to almost everything. Limited rooms in this zone, fills fast.",
@@ -107,7 +107,7 @@ const ZONE_INSIGHT: Record<string, string> = {
 // Story-based insight - community / what to expect
 const STORY_INSIGHT: Record<string, string> = {
   newjob: "Most of our community started exactly here. We hold the room before your joining date.",
-  upgrade: "9 in 10 residents came from a PG that didn't work out. We listen first, match second.",
+  upgrade: "9 in 10 residents came to us from a stay that didn't feel like home. We listen first, host second.",
   intern: "Flexible 2-6 month stays, no lock-in. Plenty of interns convert to full-time in the same room.",
   student: "We have student clusters near Christ, IIM-B, RV, PES, MSRIT, Jain, Mount Carmel — same-college floors when available.",
   relocate: "We pre-book before you land. Some residents move straight from the airport with one bag.",
@@ -134,7 +134,7 @@ const BUDGET_INSIGHT: Record<string, string> = {
 
 const WORRY_INSIGHT: Record<string, string> = {
   deposit: "Every paisa goes on an official Gharpayy receipt. Never a random owner's account.",
-  bad_exp: "You're not the first. Most residents tell us their old PG horror story on day 1.",
+  bad_exp: "You're not the first. Most residents share their old stay's horror story on day 1 — and never have to repeat it.",
   budget_unsure: "Tell our expert your real number. We'll be honest about what fits.",
   parents: "Parents call us all the time. We can put them on a call directly if it helps.",
   visit: "We arrange visits every single day. Walk in, see the room, meet the people.",
@@ -153,7 +153,7 @@ const STEPS: Record<StepId, Step> = {
     opts: [
       { v: "newjob", e: "", t: "New job offer / starting work", d: "Exciting chapter. Let's settle you right." },
       { v: "student", e: "", t: "Student starting at college / university", d: "Hostel-tired or first-time mover. Campus-zone stays ready." },
-      { v: "upgrade", e: "", t: "Current PG isn't working out", d: "We know that feeling. Let's fix it properly." },
+      { v: "upgrade", e: "", t: "Current stay isn't working out", d: "We know that feeling. Let's host you properly this time." },
       { v: "intern", e: "", t: "Short internship - 2 to 6 months", d: "Flexible, no lock-in." },
       { v: "relocate", e: "", t: "Moving to Bangalore from another city", d: "New city, blank slate. We'll smooth it out." },
       { v: "blr", e: "", t: "Already in BLR, want something better", d: "You deserve better than what you have now." },
@@ -179,7 +179,7 @@ const STEPS: Record<StepId, Step> = {
     qs: "Helps me read your urgency.",
     opts: [
       { v: "hotel", e: "", t: "Hotel or temporary Airbnb", d: "Burning cash daily. Let's move fast." },
-      { v: "pg", e: "", t: "Another PG or hostel", d: "Upgrading. We'll find genuinely better." },
+      { v: "pg", e: "", t: "Another shared stay", d: "Upgrading. We'll host you genuinely better." },
       { v: "flat", e: "", t: "Flat or apartment", d: "Moving to managed - less hassle." },
       { v: "friend", e: "", t: "With a friend or family", d: "Time to get your own space." },
       { v: "nowhere", e: "", t: "Not settled yet - urgent", d: "This becomes top priority. Right now." },
@@ -229,7 +229,7 @@ const STEPS: Record<StepId, Step> = {
   zone: {
     type: "choice", key: "zone",
     q: "Which Gharpayy zone fits your day?",
-    qs: "5 zones where we actually run properties. Pick the one closest to your daily life.",
+    qs: "5 zones we host across. Pick the one closest to your daily life.",
     opts: ZONE_OPTS,
     next: () => "zone_areas",
   },
@@ -306,12 +306,12 @@ const STEPS: Record<StepId, Step> = {
   gender: {
     type: "choice", key: "gender",
     q: "This stay is for…",
-    qs: "Helps with property + community match.",
+    qs: "Helps us host you on the right floor.",
     opts: [
-      { v: "boys", e: "👨", t: "Boys / male PG", d: "Boys-only or coed - both available." },
-      { v: "girls", e: "👩", t: "Girls / female PG", d: "Girls-only or female floor - your choice." },
-      { v: "coed", e: "🤝", t: "Coed is fine", d: "Mixed-gender properties across BLR." },
-      { v: "couple", e: "👫", t: "Me and my partner", d: "Couple-friendly properties available." },
+      { v: "boys", e: "👨", t: "Him / a guy", d: "Boys-only or coed floor — your call." },
+      { v: "girls", e: "👩", t: "Her / a girl", d: "Girls-only or female floor — your call." },
+      { v: "coed", e: "🤝", t: "Coed is fine", d: "Mixed-gender floors across our homes." },
+      { v: "couple", e: "👫", t: "Me and my partner", d: "Couple-friendly homes, including 1BHKs." },
     ],
     next: () => "name",
   },
@@ -353,7 +353,7 @@ const STEPS: Record<StepId, Step> = {
     qs: "We address it before you even meet us. Not a trap.",
     opts: [
       { v: "deposit", e: "", t: "My deposit will get stuck", d: "Official receipt the moment you pay. Always." },
-      { v: "bad_exp", e: "", t: "Had a bad PG experience", d: "Tell us when we call - we'll make sure it's different." },
+      { v: "bad_exp", e: "", t: "Had a rough stay before", d: "Tell us when we call — we'll make sure it's different." },
       { v: "budget_unsure", e: "", t: "Not sure I can afford the good ones", d: "Let's figure it out together." },
       { v: "parents", e: "", t: "My parents need comfort too", d: "We speak to families directly. Many parents call us first." },
       { v: "visit", e: "", t: "I need to see it in person", d: "We arrange visits every day. Zero pressure." },
@@ -403,7 +403,7 @@ const VISIT_DYNAMIC = (d: Data) => {
       qs: "5-min tour beats 10 chats. We'll arrange it the same day if you say yes.",
       opts: [
         { v: "visit", e: "", t: "Yes - take me on a visit", d: "Walk in, see the room, meet the people." },
-        { v: "prebook", e: "", t: "Skip visit - let's pre-book", d: "I trust the verified listings. Save my spot." },
+        { v: "prebook", e: "", t: "Skip visit - let's pre-book", d: "I trust you to host me right. Save my spot." },
         { v: "skip", e: "", t: "Not yet - call me first", d: "Talk to expert before deciding." },
       ] as ChoiceOpt[],
     };
@@ -421,15 +421,15 @@ const VISIT_DYNAMIC = (d: Data) => {
 
 // ─── Labels ──────────────────────────────────────────────────────────
 const L_INTENT: Record<string,string> = { perfect:"Most homely stay", budget:"Most affordable", nearby:"Close to office/college", safe:"Safety & trust priority" };
-const L_STORY: Record<string,string> = { newjob:"New job/college start", student:"Student", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
-const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"PG/hostel", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT - not settled" };
+const L_STORY: Record<string,string> = { newjob:"New job/college start", student:"Student", upgrade:"Upgrading stay", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
+const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"Shared stay", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT - not settled" };
 const L_NOTICE: Record<string,string> = { given:"Notice given", not_yet:"Not yet", difficult:"Complicated", free:"No contract" };
 const L_ARRIVAL: Record<string,string> = { thisweek:"This week", thismonth:"This month", nextmonth:"Next month", later:"2-3 months out" };
 const L_MOVEIN: Record<string,string> = { now:"ASAP - urgent","2wk":"Within 2 weeks", month:"Month-end", next:"Next month or later" };
 const L_ZONE: Record<string,string> = { east:"East zone (Whitefield)", orr:"ORR zone (Bellandur)", north:"North zone (Manyata)", central:"Central zone (Koramangala/Vasanth Nagar)", south:"South zone (Electronic City)" };
 const L_BUDGET: Record<string,string> = { basic:"BASIC ₹7k-11k", classic:"CLASSIC ₹12k-17k", prive:"PRIVE ₹17k-26k", luxemax:"LUXE MAX ₹25k-45k" };
 const L_ROOM: Record<string,string> = { private:"Private room", double:"Double sharing", triple:"Triple sharing", flex:"Best deal (flexible)" };
-const L_GENDER: Record<string,string> = { boys:"Male PG", girls:"Female PG", coed:"Coed", couple:"Couple" };
+const L_GENDER: Record<string,string> = { boys:"Him", girls:"Her", coed:"Coed", couple:"Couple" };
 const L_WORRY: Record<string,string> = { deposit:"Deposit security", bad_exp:"Past bad experience", budget_unsure:"Budget uncertainty", parents:"Parents' comfort", visit:"In-person visit needed", deciding:"Comparing options", ready:"Ready to move fast" };
 const L_VISIT: Record<string,string> = { visit:"Wants a visit / VR tour", prebook:"Wants to pre-book", skip:"Call first" };
 const L_VISIT_WHEN: Record<string,string> = { today:"Today/tomorrow", thisweek:"This week", weekend:"This weekend", nextweek:"Next week+" };
@@ -523,7 +523,7 @@ function insightFor(step: StepId, d: Data): string | null {
 
 // Live social-proof line for completed steps
 function proofFor(step: StepId, d: Data): string | null {
-  if (step === "zone" && d.zone) return `${matchedToday(d.zone)} people from your zone matched this week.`;
+  if (step === "zone" && d.zone) return `${matchedToday(d.zone)} people from your zone moved into a Gharpayy home this week.`;
   if (step === "budget" && d.budget && d.zone) return `Most popular tier in your zone — ${tierPopularity(d.zone, d.budget)}% pick this.`;
   if (step === "visit" && d.visit === "visit") return `${visitsBookedToday()} visits already booked today.`;
   return null;
@@ -860,7 +860,7 @@ export default function GharpayyForm() {
                 </div>
 
                 <p className="text-center text-[11px] text-[#667781] mt-3 italic px-4 leading-snug">
-                  Less is more. One room. One promise. Done right.
+                  Hotel-grade homes across Bangalore — private rooms to full 1BHKs. We host you, end to end.
                 </p>
               </>
             )}
@@ -1127,7 +1127,7 @@ export default function GharpayyForm() {
                         {[
                           { icon: <Zap className="w-3.5 h-3.5" />, t: "Within 2 min", d: "Expert sees your brief on WhatsApp" },
                           { icon: <Phone className="w-3.5 h-3.5" />, t: "Within 30 min", d: `Personal call to ${data.phone || "you"}` },
-                          { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "Matched stays from your zone" },
+                          { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "Hand-picked homes from your zone" },
                           { icon: <Check className="w-3.5 h-3.5" />, t: data.visit === "prebook" ? "Within 24h" : "Within 48h",
                             d: data.visit === "prebook" ? "Pre-booking confirmed" : data.visit === "visit" ? "Visit / VR tour scheduled" : "Call to plan next step" },
                         ].map((s, i) => (
