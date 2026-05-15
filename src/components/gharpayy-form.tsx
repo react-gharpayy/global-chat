@@ -421,8 +421,8 @@ const VISIT_DYNAMIC = (d: Data) => {
 
 // ─── Labels ──────────────────────────────────────────────────────────
 const L_INTENT: Record<string,string> = { perfect:"Most homely stay", budget:"Most affordable", nearby:"Close to office/college", safe:"Safety & trust priority" };
-const L_STORY: Record<string,string> = { newjob:"New job/college start", student:"Student", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
-const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"PG/hostel", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT - not settled" };
+const L_STORY: Record<string,string> = { newjob:"New job/college start", student:"Student", upgrade:"Upgrading stay", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
+const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"Shared stay", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT - not settled" };
 const L_NOTICE: Record<string,string> = { given:"Notice given", not_yet:"Not yet", difficult:"Complicated", free:"No contract" };
 const L_ARRIVAL: Record<string,string> = { thisweek:"This week", thismonth:"This month", nextmonth:"Next month", later:"2-3 months out" };
 const L_MOVEIN: Record<string,string> = { now:"ASAP - urgent","2wk":"Within 2 weeks", month:"Month-end", next:"Next month or later" };
