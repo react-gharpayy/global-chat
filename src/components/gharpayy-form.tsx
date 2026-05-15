@@ -1242,21 +1242,38 @@ export default function GharpayyForm() {
   );
 }
 
+// ─── Question card: eyebrow + step number + Q + sub ─────────────────
+function QuestionCard({ q, qs, stepNumber, total }: { q: string; qs: string; stepNumber?: number; total?: number }) {
+  return (
+    <Bubble side="in" delay={0.05}>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold tracking-wider uppercase" style={{ background: "rgba(18,140,126,0.12)", color: "#128C7E" }}>
+          Question{stepNumber && total ? ` ${stepNumber} of ${total}` : ""}
+        </span>
+      </div>
+      <p className="text-[16px] font-bold text-[#111B21] leading-snug" style={{ fontFamily: "var(--font-display)" }}>{q}</p>
+      {qs && <p className="text-[12.5px] text-[#667781] mt-1.5 leading-snug">{qs}</p>}
+    </Bubble>
+  );
+}
+
+const ABCD = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
 // ─── Reusable choice block ──────────────────────────────────────────
 function ChoiceBlock({
-  step, selected, onPick, onSkip,
+  step, selected, onPick, onSkip, stepNumber, total,
 }: {
   step: Extract<Step, { type: "choice" }>;
   selected: string | undefined;
   onPick: (v: string) => void;
   onSkip: () => void;
+  stepNumber?: number;
+  total?: number;
 }) {
   return (
     <>
-      <Bubble side="in" delay={0.05}>
-        <p className="text-[15px] font-bold text-[#111B21] leading-snug">{step.q}</p>
-        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{step.qs}</p>
-      </Bubble>
+      <QuestionCard q={step.q} qs={step.qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Tap to choose</p>
       <div className="space-y-2">
         {step.opts.map((o, i) => {
           const on = selected === o.v;
@@ -1266,8 +1283,13 @@ function ChoiceBlock({
               transition={{ delay: 0.1 + i * 0.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => onPick(o.v)}
+              data-step={step.key}
+              data-answer-key={o.v}
+              aria-label={`${ABCD[i]}: ${o.t}`}
               className={`w-full flex items-center gap-3 rounded-2xl p-3 min-h-[56px] text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
-              {o.e && <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>}
+              <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-extrabold ${on ? "bg-[#25D366] text-white" : "bg-black/5 text-[#667781]"}`}>
+                {ABCD[i]}
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
                 <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
