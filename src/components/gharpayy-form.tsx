@@ -1091,6 +1091,37 @@ export default function GharpayyForm() {
                       )}
                     </div>
 
+                    {/* Zone-specific WhatsApp picker */}
+                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-1">Reach your zone directly</p>
+                      <p className="text-[12px] text-[#667781] leading-snug mb-3">Each Gharpayy zone has its own expert on WhatsApp. Tap the one that fits — your full brief is pre-filled.</p>
+                      <div className="space-y-2">
+                        {(data.story === "student" ? [{ key: "student", ...STUDENT_WA }] : [])
+                          .concat(Object.entries(ZONE_WA).map(([k, v]) => ({ key: k, ...v })))
+                          .map((z) => {
+                            const url = `https://wa.me/${z.wa}?text=${encodeURIComponent(waMessage)}`;
+                            const isYours = data.zone && z.key === data.zone;
+                            const isStudent = z.key === "student";
+                            return (
+                              <a key={z.key} href={url} target="_blank" rel="noopener noreferrer"
+                                 className={`flex items-center gap-3 rounded-xl p-2.5 border transition-all ${isYours || isStudent ? "border-[#25D366] bg-[#25D366]/5" : "border-black/5 hover:border-[#25D366]/40 bg-white"}`}>
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isStudent ? "bg-gradient-to-br from-[#1F47BA] to-[#0F2F8A]" : "bg-gradient-to-br from-[#25D366] to-[#128C7E]"}`}>
+                                  <MessageCircle className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[12.5px] font-bold text-[#111B21] leading-tight truncate">
+                                    {z.label}{isYours ? "  ·  your zone" : ""}
+                                  </p>
+                                  <p className="text-[10.5px] text-[#667781] leading-tight truncate">{z.sub}</p>
+                                  <p className="text-[11px] text-[#128C7E] font-semibold leading-tight mt-0.5">{z.display}</p>
+                                </div>
+                                <Send className="w-4 h-4 text-[#25D366] flex-shrink-0" />
+                              </a>
+                            );
+                          })}
+                      </div>
+                    </div>
+
                     <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-2.5">What happens next</p>
                       <div className="space-y-2.5">
