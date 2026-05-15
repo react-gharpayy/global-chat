@@ -141,7 +141,8 @@ const STEPS: Record<StepId, Step> = {
     q: "What's your situation right now?",
     qs: "Tell me honestly. Shapes everything I'll find for you.",
     opts: [
-      { v: "newjob", e: "", t: "New job offer / starting college", d: "Exciting chapter. Let's settle you right." },
+      { v: "newjob", e: "", t: "New job offer / starting work", d: "Exciting chapter. Let's settle you right." },
+      { v: "student", e: "", t: "Student starting at college / university", d: "Hostel-tired or first-time mover. Campus-zone stays ready." },
       { v: "upgrade", e: "", t: "Current PG isn't working out", d: "We know that feeling. Let's fix it properly." },
       { v: "intern", e: "", t: "Short internship - 2 to 6 months", d: "Flexible, no lock-in." },
       { v: "relocate", e: "", t: "Moving to Bangalore from another city", d: "New city, blank slate. We'll smooth it out." },
