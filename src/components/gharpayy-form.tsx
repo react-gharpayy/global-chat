@@ -353,7 +353,7 @@ const STEPS: Record<StepId, Step> = {
     qs: "We address it before you even meet us. Not a trap.",
     opts: [
       { v: "deposit", e: "", t: "My deposit will get stuck", d: "Official receipt the moment you pay. Always." },
-      { v: "bad_exp", e: "", t: "Had a bad PG experience", d: "Tell us when we call - we'll make sure it's different." },
+      { v: "bad_exp", e: "", t: "Had a rough stay before", d: "Tell us when we call — we'll make sure it's different." },
       { v: "budget_unsure", e: "", t: "Not sure I can afford the good ones", d: "Let's figure it out together." },
       { v: "parents", e: "", t: "My parents need comfort too", d: "We speak to families directly. Many parents call us first." },
       { v: "visit", e: "", t: "I need to see it in person", d: "We arrange visits every day. Zero pressure." },
