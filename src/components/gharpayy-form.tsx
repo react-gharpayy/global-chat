@@ -567,6 +567,14 @@ export default function GharpayyForm() {
     return () => clearInterval(id);
   }, [tStart, cur]);
 
+  // 60-tick countdown where each tick = 2 real seconds (relaxed pacing).
+  const [secsLeft, setSecsLeft] = useState(60);
+  useEffect(() => {
+    if (!tStart || cur === "welcome" || cur === "reveal") return;
+    const id = setInterval(() => setSecsLeft(s => (s > 0 ? s - 1 : 0)), 2000);
+    return () => clearInterval(id);
+  }, [tStart, cur]);
+
   // Aayushi "typing" before each new question
   useEffect(() => {
     if (cur === "welcome" || cur === "reveal") { setTyping(false); return; }
