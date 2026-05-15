@@ -769,11 +769,20 @@ export default function GharpayyForm() {
         />
 
         {isInteractive && (
-          <div className="h-[3px] bg-black/5">
-            <motion.div className="h-full bg-[#25D366]"
-              initial={false}
-              animate={{ width: `${fullness}%` }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }} />
+          <div className="px-3 py-1.5 flex items-center gap-2 border-b border-black/5" style={{ background: "var(--gp-surface)" }}>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums"
+              style={{ background: secsLeft > 10 ? "rgba(37,211,102,0.14)" : "rgba(229,57,53,0.14)", color: secsLeft > 10 ? "#128C7E" : "#C62828" }}>
+              ⏱ 0:{String(secsLeft).padStart(2, "0")}
+            </span>
+            <div className="flex-1 h-[5px] rounded-full bg-black/10 overflow-hidden">
+              <motion.div className="h-full bg-gradient-to-r from-[#25D366] to-[#128C7E]"
+                initial={false}
+                animate={{ width: `${fullness}%` }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }} />
+            </div>
+            <span className="text-[10.5px] font-semibold" style={{ color: "var(--gp-text-muted)" }}>
+              {fullness < 30 ? "warming up" : fullness < 60 ? "getting closer" : fullness < 90 ? "almost there" : "one tap away"}
+            </span>
           </div>
         )}
 
