@@ -219,7 +219,7 @@ const STEPS: Record<StepId, Step> = {
   zone: {
     type: "choice", key: "zone",
     q: "Which Gharpayy zone fits your day?",
-    qs: "5 belts where we actually run properties. Pick the one closest to your daily life.",
+    qs: "5 zones where we actually run properties. Pick the one closest to your daily life.",
     opts: ZONE_OPTS,
     next: () => "zone_areas",
   },
