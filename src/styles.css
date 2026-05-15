@@ -42,7 +42,7 @@
   --color-surface-glass-gold: var(--surface-glass-gold);
   --color-surface-glass-gold-border: var(--surface-glass-gold-border);
   --font-sans: 'Inter', sans-serif;
-  --font-display: 'Playfair Display', serif;
+  --font-display: 'Bricolage Grotesque', 'Inter', sans-serif;
 }
 
 :root {
