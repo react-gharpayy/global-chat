@@ -87,11 +87,11 @@ const fmtINR = (n: string | number) => {
 
 // ─── Insights — vibe & community of each zone (no rent talk) ─────────
 const ZONE_INSIGHT: Record<string, string> = {
-  east:    "We have full live properties here - Whitefield, Brookfield, Marathalli, Mahadevapura. ITPL/EPIP crowd, Phoenix on weekends. Strong waitlist, so worth locking early.",
+  east:    "We have full live properties across this zone — Whitefield, Brookfield, Marathalli, Mahadevapura. ITPL/EPIP crowd, Phoenix on weekends. Strong waitlist, so worth locking early.",
   orr:    "Bellandur is one of our flagship zones. Lake-view mornings, ORR tech-park afternoons. Most residents here are mid/senior engineers from Wipro, Cisco, Accenture.",
-  north:  "Nagawara + Manyata is our quietest, greenest belt. Walk-to-IBM-Manyata residents, Hebbal lake nearby, very low noise floors.",
-  central: "Koramangala + Vasanth Nagar - founders, designers, creatives. Walk to almost everything. Limited rooms here, fills fast.",
-  south:  "Electronic City - Infosys/Wipro/TCS/Biocon engineers. Predictable suburban life, your weekday becomes a 5-min commute.",
+  north:  "Nagawara + Manyata is our quietest, greenest zone. Walk-to-IBM-Manyata residents, Hebbal lake nearby, very low noise floors.",
+  central: "Koramangala + Vasanth Nagar — founders, designers, creatives. Walk to almost everything. Limited rooms in this zone, fills fast.",
+  south:  "Electronic City — Infosys/Wipro/TCS/Biocon engineers. Predictable suburban life, your weekday becomes a 5-min commute.",
 };
 
 // Story-based insight - community / what to expect
@@ -99,16 +99,20 @@ const STORY_INSIGHT: Record<string, string> = {
   newjob: "Most of our community started exactly here. We hold the room before your joining date.",
   upgrade: "9 in 10 residents came from a PG that didn't work out. We listen first, match second.",
   intern: "Flexible 2-6 month stays, no lock-in. Plenty of interns convert to full-time in the same room.",
+  student: "We have student clusters near Christ, IIM-B, RV, PES, MSRIT, Jain, Mount Carmel — same-college floors when available.",
   relocate: "We pre-book before you land. Some residents move straight from the airport with one bag.",
   blr: "Quiet neighbours, working WiFi, owner who actually picks up. Boring stuff done right changes your day.",
   explore: "No pressure. You'll see real options - even imperfect ones, told honestly.",
 };
 
 // Workplace hint - empathy reply
-function workplaceInsight(work?: string, zone?: string) {
+function workplaceInsight(work?: string, zone?: string, story?: string) {
   if (!work) return null;
-  const z = zone ? ZONE_OPTS.find(x => x.v === zone)?.t.split(" - ")[1] : "your zone";
-  return `Got it - ${work}. We'll match places where commute stays under 25 min from ${z ?? "there"}. That's the real metric.`;
+  const z = zone ? ZONE_OPTS.find(x => x.v === zone)?.t.split(" — ")[1] : "your zone";
+  if (story === "student") {
+    return `Got it — ${work}. We'll match you with same-college residents wherever possible, and keep commute under 20 min from ${z ?? "campus"}.`;
+  }
+  return `Got it — ${work}. We'll match places where commute stays under 25 min from ${z ?? "there"}. That's the real metric.`;
 }
 
 const BUDGET_INSIGHT: Record<string, string> = {
