@@ -505,7 +505,7 @@ function echoFor(step: StepId, d: Data): string | null {
 function insightFor(step: StepId, d: Data): string | null {
   if (step === "story" && d.story) return STORY_INSIGHT[d.story] || null;
   if (step === "zone" && d.zone) return ZONE_INSIGHT[d.zone] || null;
-  if (step === "workplace" && d.workplace) return workplaceInsight(d.workplace, d.zone);
+  if (step === "workplace" && d.workplace) return workplaceInsight(d.workplace, d.zone, d.story);
   if (step === "budget" && d.budget) return BUDGET_INSIGHT[d.budget] || null;
   if (step === "worry" && d.worry) return WORRY_INSIGHT[d.worry] || null;
   return null;
