@@ -882,72 +882,15 @@ export default function GharpayyForm() {
                 )}
 
                 {/* BUDGET EXACT (per-tier chips + custom + food toggle) */}
-                {cur === "budget_exact" && (() => {
-                  const tier = data.budget || "basic";
-                  const opts = BUDGET_EXACT_OPTS[tier] || [];
-                  const tierLabel = L_BUDGET[tier] || "this tier";
-                  const isCustom = data.budget_exact === "custom";
-                  return (
-                    <>
-                      <Bubble side="in" delay={0.05}>
-                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">Real monthly ceiling inside {tierLabel}?</p>
-                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">Honest number means we only show stays that fit. One tap saves a 20-min back-and-forth call later.</p>
-                      </Bubble>
-                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                        <div className="flex flex-wrap gap-1.5">
-                          {opts.map(n => {
-                            const on = data.budget_exact === n;
-                            return (
-                              <button key={n} type="button"
-                                onClick={() => { tap(); setData(d => ({ ...d, budget_exact: n, budget_exact_custom: undefined })); }}
-                                className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
-                                {fmtINR(n)}
-                              </button>
-                            );
-                          })}
-                          <button type="button"
-                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "flex", budget_exact_custom: undefined })); }}
-                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${data.budget_exact === "flex" ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#128C7E] border-[#25D366]/40 hover:bg-[#25D366]/10"}`}>
-                            Flexible inside tier
-                          </button>
-                          <button type="button"
-                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "custom" })); }}
-                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border border-dashed transition-all ${isCustom ? "bg-[#25D366]/10 text-[#128C7E] border-[#128C7E]" : "text-[#128C7E] border-[#128C7E]/40 hover:bg-[#25D366]/5"}`}>
-                            + Set my own number
-                          </button>
-                        </div>
-                        {isCustom && (
-                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
-                            <input type="number" inputMode="numeric" placeholder="e.g. 18500"
-                              value={data.budget_exact_custom || ""}
-                              onChange={e => setData(d => ({ ...d, budget_exact_custom: e.target.value.replace(/\D/g, "") }))}
-                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                            <p className="text-[10.5px] text-[#667781] mt-1.5">Per month, in rupees.</p>
-                          </div>
-                        )}
-                        <div className="mt-3 pt-2.5 border-t border-black/5">
-                          <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] mb-1.5">Food</p>
-                          <div className="flex gap-1.5">
-                            {(["included","extra"] as const).map(f => {
-                              const on = data.food_pref === f;
-                              return (
-                                <button key={f} type="button"
-                                  onClick={() => { tap(); setData(d => ({ ...d, food_pref: on ? undefined : f })); }}
-                                  className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366]"}`}>
-                                  {on && "✓ "}{L_FOOD[f]}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                      <ContinueBtn
-                        disabled={!data.budget_exact || (isCustom && !(data.budget_exact_custom || "").length)}
-                        onClick={() => advance()}
-                      />
-                    </>
-                  );
-                })()}
+                {cur === "budget_exact" && (
+                  <BudgetExactBlock
+                    data={data}
+                    setData={setData}
+                    onAdvance={() => advance()}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
+                  />
+                )}
 
 
                 {/* TEXT */}
@@ -955,62 +898,30 @@ export default function GharpayyForm() {
                   const s = STEPS[cur] as Extract<Step, { type: "text" }>;
                   const val = (data as Record<string, unknown>)[s.key] as string | undefined;
                   return (
-                    <>
-                      <Bubble side="in" delay={0.05}>
-                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">{s.q}</p>
-                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{s.qs}</p>
-                      </Bubble>
-                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                        <input ref={inputRef} type="text"
-                          placeholder={s.ph}
-                          value={val || ""}
-                          onChange={e => setData(d => ({ ...d, [s.key]: e.target.value }))}
-                          onKeyDown={e => { if (e.key === "Enter" && (val || "").length > 1) advance(); }}
-                          className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
-                        {s.chips && (
-                          <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-black/5">
-                            {s.chips.map(c => (
-                              <button key={c} type="button"
-                                onClick={() => setData(d => ({ ...d, [s.key]: c }))}
-                                className="px-2.5 py-1 rounded-full text-[11px] font-medium text-[#128C7E] bg-[#25D366]/8 hover:bg-[#25D366]/15 border border-[#25D366]/20 transition-colors">
-                                {c}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => advance()}
-                          className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
-                          Skip
-                        </button>
-                        <ContinueBtn
-                          disabled={!s.optional && (!(val || "").length || (val || "").length < 2)}
-                          onClick={() => advance()}
-                          className="flex-1"
-                        />
-                      </div>
-                    </>
+                    <TextBlock
+                      step={s}
+                      val={val}
+                      inputRef={inputRef}
+                      onChange={v => setData(d => ({ ...d, [s.key]: v }))}
+                      onAdvance={() => advance()}
+                      stepNumber={stepNumber}
+                      total={TOTAL_STEPS}
+                    />
                   );
                 })()}
 
                 {/* NAME (mid-flow, friendlier than contact form) */}
                 {STEPS[cur].type === "name" && (
-                  <>
-                    <Bubble side="in" delay={0.05}>
-                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as Extract<Step, { type: "name" }>).q}</p>
-                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as Extract<Step, { type: "name" }>).qs}</p>
-                    </Bubble>
-                    <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                      <input ref={inputRef} type="text"
-                        placeholder="First name"
-                        value={data.name || ""}
-                        onChange={e => setData(d => ({ ...d, name: e.target.value }))}
-                        onKeyDown={e => { if (e.key === "Enter" && (data.name || "").trim().length > 0) submitName(); }}
-                        className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
-                    </div>
-                    <ContinueBtn disabled={!(data.name || "").trim()} onClick={submitName} />
-                  </>
+                  <NameBlock
+                    q={(STEPS[cur] as Extract<Step, { type: "name" }>).q}
+                    qs={(STEPS[cur] as Extract<Step, { type: "name" }>).qs}
+                    name={data.name}
+                    inputRef={inputRef}
+                    onChange={v => setData(d => ({ ...d, name: v }))}
+                    onSubmit={submitName}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
+                  />
                 )}
 
                 {/* MULTI */}
@@ -1021,60 +932,19 @@ export default function GharpayyForm() {
                   const opts = isAreas ? (ZONE_AREAS[data.zone || ""] || []) : s.opts;
                   const otherTarget: StepId | null = cur === "matters" ? "matters_other" : null;
                   return (
-                    <>
-                      <Bubble side="in" delay={0.05}>
-                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">{s.q}</p>
-                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{s.qs}</p>
-                      </Bubble>
-                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                        <div className="flex flex-wrap gap-1.5">
-                          {opts.map(o => {
-                            const on = arr.includes(o);
-                            const disabled = !on && arr.length >= s.max;
-                            return (
-                              <button key={o} type="button"
-                                disabled={disabled}
-                                onClick={() => toggleMulti(s.key, o, s.max)}
-                                className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : disabled ? "bg-black/5 text-black/30 border-transparent cursor-not-allowed" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
-                                {on && "✓ "}{o}
-                              </button>
-                            );
-                          })}
-                          {s.allowOther && otherTarget && (
-                            <button type="button"
-                              onClick={() => { setHistory(h => [...h, cur]); setCur(otherTarget); }}
-                              className="px-3 py-1.5 rounded-full text-[12.5px] font-medium border border-dashed border-[#128C7E]/40 text-[#128C7E] bg-[#25D366]/5 hover:bg-[#25D366]/10">
-                              + Write your own
-                            </button>
-                          )}
-                        </div>
-                        {isAreas && (
-                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
-                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] block mb-1">+ Add another area</label>
-                            <input type="text" placeholder="e.g. Kasavanahalli, Bagmane Tech Park"
-                              value={data.area_other || ""}
-                              onChange={e => setData(d => ({ ...d, area_other: e.target.value }))}
-                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                          </div>
-                        )}
-                        <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
-                          {arr.length} of {s.max} selected
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        {s.optional && (
-                          <button type="button" onClick={() => advance()}
-                            className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
-                            Skip
-                          </button>
-                        )}
-                        <ContinueBtn
-                          disabled={!s.optional && arr.length === 0 && !(isAreas && (data.area_other || "").trim().length > 0)}
-                          onClick={() => advance()}
-                          className="flex-1"
-                        />
-                      </div>
-                    </>
+                    <MultiBlock
+                      step={s}
+                      arr={arr}
+                      opts={opts}
+                      isAreas={isAreas}
+                      areaOther={data.area_other || ""}
+                      setAreaOther={v => setData(d => ({ ...d, area_other: v }))}
+                      onToggle={v => toggleMulti(s.key, v, s.max)}
+                      onWriteOther={otherTarget ? () => { setHistory(h => [...h, cur]); setFuture([]); setCur(otherTarget); } : undefined}
+                      onAdvance={() => advance()}
+                      stepNumber={stepNumber}
+                      total={TOTAL_STEPS}
+                    />
                   );
                 })()}
 
