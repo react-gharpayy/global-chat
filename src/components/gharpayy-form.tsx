@@ -1127,7 +1127,7 @@ export default function GharpayyForm() {
                         {[
                           { icon: <Zap className="w-3.5 h-3.5" />, t: "Within 2 min", d: "Expert sees your brief on WhatsApp" },
                           { icon: <Phone className="w-3.5 h-3.5" />, t: "Within 30 min", d: `Personal call to ${data.phone || "you"}` },
-                          { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "Matched stays from your zone" },
+                          { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "Hand-picked homes from your zone" },
                           { icon: <Check className="w-3.5 h-3.5" />, t: data.visit === "prebook" ? "Within 24h" : "Within 48h",
                             d: data.visit === "prebook" ? "Pre-booking confirmed" : data.visit === "visit" ? "Visit / VR tour scheduled" : "Call to plan next step" },
                         ].map((s, i) => (
