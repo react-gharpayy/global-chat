@@ -750,11 +750,14 @@ export default function GharpayyForm() {
       <div className="w-full max-w-md relative min-h-[100dvh] flex flex-col overflow-hidden wa-chat-bg">
         <ChatHeader
           onBack={isInteractive && history.length > 0 && !submitting ? back : undefined}
+          onForward={isInteractive && future.length > 0 && !submitting ? forward : undefined}
           subtitle={subtitle}
           waNumber={GHARPAYY_WA}
           waDisplay={GHARPAYY_WA_DISPLAY}
           zone={data.zone}
           showTicker={isInteractive}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {isInteractive && (
