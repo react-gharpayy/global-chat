@@ -1014,23 +1014,32 @@ export default function GharpayyForm() {
                 )}
 
                 {/* REVEAL */}
-                {cur === "reveal" && (
+                {cur === "reveal" && (() => {
+                  const isStudent = data.story === "student";
+                  const matched = isStudent
+                    ? { key: "student", ...STUDENT_WA }
+                    : (data.zone && ZONE_WA[data.zone])
+                      ? { key: data.zone, ...ZONE_WA[data.zone] }
+                      : { key: "all", wa: GHARPAYY_WA, display: GHARPAYY_WA_DISPLAY, label: "Gharpayy team", sub: "Anywhere in Bangalore" };
+                  const matchedUrl = `https://wa.me/${matched.wa}?text=${encodeURIComponent(waMessage)}`;
+                  const others = Object.entries(ZONE_WA)
+                    .filter(([k]) => k !== matched.key)
+                    .map(([k, v]) => ({ key: k, ...v }));
+                  if (!isStudent) others.unshift({ key: "student", ...STUDENT_WA });
+                  return (
                   <>
-                    <Bubble side="in" delay={0.05}>
-                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">
-                        Got it{data.name ? `, ${data.name}` : ""}.
-                      </p>
-                      <p className="text-[13px] text-[#111B21] leading-snug mt-1">
-                        You're #{1 + (matchedToday(data.zone) % 4)} in Aayushi's queue. We have everything we need to start.
-                      </p>
-                    </Bubble>
-
-                    {autoCopied !== null && (
-                      <div className={`self-center max-w-[94%] px-3 py-2 rounded-full text-[11.5px] font-semibold flex items-center gap-1.5 ${autoCopied ? "bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30" : "bg-amber-50 text-amber-800 border border-amber-200"}`}>
-                        <Copy className="w-3 h-3" />
-                        {autoCopied ? "Brief auto-copied — paste anywhere ✓" : "Tap copy below to grab your brief"}
+                    {/* Hero — quiet, confident */}
+                    <div className="self-stretch text-center pt-2 pb-1">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#25D366]/10 text-[#128C7E] text-[10px] font-bold uppercase tracking-[0.12em] mb-3">
+                        <Check className="w-3 h-3" /> Brief ready
                       </div>
-                    )}
+                      <h2 className="font-display text-[26px] leading-[1.15] tracking-tight text-[#111B21] font-bold">
+                        {data.name ? `Thank you, ${data.name}.` : "Thank you."}
+                      </h2>
+                      <p className="text-[13.5px] text-[#667781] leading-snug mt-2 max-w-[300px] mx-auto">
+                        Your home host is ready. One tap on WhatsApp — we take it from here.
+                      </p>
+                    </div>
 
                     <MovePlanCard
                       name={data.name}
@@ -1043,110 +1052,68 @@ export default function GharpayyForm() {
                       ]}
                     />
 
-                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] flex items-center justify-center flex-shrink-0 shadow">
+                    {/* The ONE primary action */}
+                    <div className="rounded-[20px] bg-white border border-black/5 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)] p-5 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] flex items-center justify-center flex-shrink-0 shadow-[0_4px_14px_-2px_rgba(37,211,102,0.5)]">
                           <MessageCircle className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781]">Send your brief to</p>
-                          <p className="font-bold text-[#111B21] text-[15px] leading-tight">Gharpayy team</p>
-                          <p className="text-[12px] text-[#25D366] font-semibold leading-tight">{GHARPAYY_WA_DISPLAY}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#667781]">Your host</p>
+                          <p className="font-bold text-[#111B21] text-[15px] leading-tight truncate">{matched.label}</p>
+                          <p className="text-[11.5px] text-[#128C7E] font-semibold leading-tight mt-0.5">{matched.display}</p>
                         </div>
                       </div>
 
-                      <a href={gharpayyUrl} target="_blank" rel="noopener noreferrer"
-                         className="w-full py-3.5 rounded-full text-[15px] font-bold btn-gold flex items-center justify-center gap-2">
-                        <Send className="w-4 h-4" /> Send on WhatsApp
+                      <a href={matchedUrl} target="_blank" rel="noopener noreferrer"
+                         className="w-full py-4 rounded-full text-[15px] font-bold btn-gold flex items-center justify-center gap-2">
+                        <Send className="w-4 h-4" /> Send brief on WhatsApp
                       </a>
 
                       <button type="button" onClick={copy}
-                        title={autoCopied ? "Already on your clipboard" : ""}
-                        className="w-full py-2.5 rounded-full text-[13px] font-semibold text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center gap-2">
-                        <Copy className="w-3.5 h-3.5" /> {copied ? (autoCopied ? "Copy again" : "Copied ✓") : "Copy my brief"}
+                        className="w-full text-[12px] text-[#667781] hover:text-[#128C7E] py-1 flex items-center justify-center gap-1.5 transition-colors">
+                        <Copy className="w-3 h-3" /> {copied ? "Copied ✓" : "Or copy brief"}
                       </button>
-
-                      {!showCustom ? (
-                        <button type="button" onClick={() => setShowCustom(true)}
-                          className="w-full text-[12px] text-[#667781] hover:text-[#25D366] py-1 transition-colors">
-                          Send to a different number →
-                        </button>
-                      ) : (
-                        <div className="pt-2 border-t border-black/5 space-y-2">
-                          <input type="tel" inputMode="numeric"
-                            placeholder="WhatsApp number (10 digits)"
-                            value={customNum}
-                            onChange={e => setCustomNum(e.target.value)}
-                            className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2.5 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                          {customUrl ? (
-                            <a href={customUrl} target="_blank" rel="noopener noreferrer"
-                               className="w-full py-2.5 rounded-full text-[13px] font-bold text-white bg-[#25D366] hover:bg-[#1ebe5a] flex items-center justify-center gap-2">
-                              <Send className="w-3.5 h-3.5" /> Send to +{customDigits.length === 10 ? "91" + customDigits : customDigits}
-                            </a>
-                          ) : (
-                            <p className="text-[11px] text-[#667781] text-center">Enter at least 10 digits</p>
-                          )}
-                        </div>
-                      )}
                     </div>
 
-                    {/* Zone-specific WhatsApp picker */}
-                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-1">Reach your zone directly</p>
-                      <p className="text-[12px] text-[#667781] leading-snug mb-3">Each Gharpayy zone has its own expert on WhatsApp. Tap the one that fits — your full brief is pre-filled.</p>
-                      <div className="space-y-2">
-                        {(data.story === "student" ? [{ key: "student", ...STUDENT_WA }] : [])
-                          .concat(Object.entries(ZONE_WA).map(([k, v]) => ({ key: k, ...v })))
-                          .map((z) => {
-                            const url = `https://wa.me/${z.wa}?text=${encodeURIComponent(waMessage)}`;
-                            const isYours = data.zone && z.key === data.zone;
-                            const isStudent = z.key === "student";
-                            return (
-                              <a key={z.key} href={url} target="_blank" rel="noopener noreferrer"
-                                 className={`flex items-center gap-3 rounded-xl p-2.5 border transition-all ${isYours || isStudent ? "border-[#25D366] bg-[#25D366]/5" : "border-black/5 hover:border-[#25D366]/40 bg-white"}`}>
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isStudent ? "bg-gradient-to-br from-[#1F47BA] to-[#0F2F8A]" : "bg-gradient-to-br from-[#25D366] to-[#128C7E]"}`}>
-                                  <MessageCircle className="w-4 h-4 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[12.5px] font-bold text-[#111B21] leading-tight truncate">
-                                    {z.label}{isYours ? "  ·  your zone" : ""}
-                                  </p>
-                                  <p className="text-[10.5px] text-[#667781] leading-tight truncate">{z.sub}</p>
-                                  <p className="text-[11px] text-[#128C7E] font-semibold leading-tight mt-0.5">{z.display}</p>
-                                </div>
-                                <Send className="w-4 h-4 text-[#25D366] flex-shrink-0" />
-                              </a>
-                            );
-                          })}
-                      </div>
-                    </div>
+                    {/* Quiet promise line */}
+                    <p className="self-center text-center text-[11.5px] text-[#667781] max-w-[280px] leading-snug px-2">
+                      Reply within 30 minutes. Your brief stays saved here if you close the tab.
+                    </p>
 
-                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-2.5">What happens next</p>
-                      <div className="space-y-2.5">
-                        {[
-                          { icon: <Zap className="w-3.5 h-3.5" />, t: "Within 2 min", d: "Expert sees your brief on WhatsApp" },
-                          { icon: <Phone className="w-3.5 h-3.5" />, t: "Within 30 min", d: `Personal call to ${data.phone || "you"}` },
-                          { icon: <HomeIcon className="w-3.5 h-3.5" />, t: "Same day", d: "Hand-picked homes from your zone" },
-                          { icon: <Check className="w-3.5 h-3.5" />, t: data.visit === "prebook" ? "Within 24h" : "Within 48h",
-                            d: data.visit === "prebook" ? "Pre-booking confirmed" : data.visit === "visit" ? "Visit / VR tour scheduled" : "Call to plan next step" },
-                        ].map((s, i) => (
-                          <div key={i} className="flex items-start gap-2.5">
-                            <div className="w-7 h-7 rounded-full bg-[#25D366]/15 text-[#128C7E] flex items-center justify-center flex-shrink-0 mt-0.5">{s.icon}</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[12px] font-bold text-[#111B21] leading-tight">{s.t}</p>
-                              <p className="text-[11.5px] text-[#667781] leading-snug mt-0.5">{s.d}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <details className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 group">
-                      <summary className="text-[12px] font-bold text-[#667781] uppercase tracking-wider cursor-pointer flex items-center justify-between">
-                        Full brief <span className="text-[#25D366] group-open:rotate-180 transition-transform">▾</span>
+                    {/* Other zones — collapsed by default */}
+                    <details className="rounded-2xl bg-white/60 border border-black/5 p-3.5 group">
+                      <summary className="text-[11.5px] font-semibold text-[#667781] cursor-pointer flex items-center justify-between list-none">
+                        <span>Different zone? See all hosts</span>
+                        <span className="text-[#128C7E] group-open:rotate-180 transition-transform">▾</span>
                       </summary>
                       <div className="mt-3 space-y-1.5">
+                        {others.map((z) => {
+                          const url = `https://wa.me/${z.wa}?text=${encodeURIComponent(waMessage)}`;
+                          return (
+                            <a key={z.key} href={url} target="_blank" rel="noopener noreferrer"
+                               className="flex items-center gap-2.5 rounded-xl p-2 hover:bg-[#25D366]/5 transition-colors">
+                              <div className="w-7 h-7 rounded-full bg-[#25D366]/10 text-[#128C7E] flex items-center justify-center flex-shrink-0">
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[12px] font-semibold text-[#111B21] leading-tight truncate">{z.label}</p>
+                                <p className="text-[10.5px] text-[#667781] leading-tight truncate">{z.display}</p>
+                              </div>
+                              <Send className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </details>
+
+                    {/* Full brief — collapsed */}
+                    <details className="rounded-2xl bg-white/60 border border-black/5 p-3.5 group">
+                      <summary className="text-[11.5px] font-semibold text-[#667781] cursor-pointer flex items-center justify-between list-none">
+                        <span>See your full brief</span>
+                        <span className="text-[#128C7E] group-open:rotate-180 transition-transform">▾</span>
+                      </summary>
+                      <div className="mt-3 space-y-1">
                         {summaryRows(data).map((r, i) => (
                           <div key={i} className="flex gap-2 py-1.5 border-b border-black/5 last:border-0 text-[12px]">
                             <span className="text-[#667781] min-w-[88px] flex-shrink-0">{r[0]}</span>
@@ -1157,11 +1124,12 @@ export default function GharpayyForm() {
                     </details>
 
                     <button type="button" onClick={restart}
-                      className="text-[12px] text-[#667781] hover:text-[#25D366] py-2 flex items-center justify-center gap-1.5 transition-colors">
+                      className="text-[11px] text-[#8696a0] hover:text-[#667781] py-2 flex items-center justify-center gap-1.5 transition-colors uppercase tracking-wider">
                       <RotateCcw className="w-3 h-3" /> Start over
                     </button>
                   </>
-                )}
+                  );
+                })()}
               </motion.div>
             </AnimatePresence>
             )}
