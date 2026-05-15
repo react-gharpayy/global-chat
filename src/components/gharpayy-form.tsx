@@ -860,7 +860,7 @@ export default function GharpayyForm() {
                 </div>
 
                 <p className="text-center text-[11px] text-[#667781] mt-3 italic px-4 leading-snug">
-                  Less is more. One room. One promise. Done right.
+                  Hotel-grade homes across Bangalore — private rooms to full 1BHKs. We host you, end to end.
                 </p>
               </>
             )}
