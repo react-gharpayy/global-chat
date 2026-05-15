@@ -107,7 +107,7 @@ const ZONE_INSIGHT: Record<string, string> = {
 // Story-based insight - community / what to expect
 const STORY_INSIGHT: Record<string, string> = {
   newjob: "Most of our community started exactly here. We hold the room before your joining date.",
-  upgrade: "9 in 10 residents came from a PG that didn't work out. We listen first, match second.",
+  upgrade: "9 in 10 residents came to us from a stay that didn't feel like home. We listen first, host second.",
   intern: "Flexible 2-6 month stays, no lock-in. Plenty of interns convert to full-time in the same room.",
   student: "We have student clusters near Christ, IIM-B, RV, PES, MSRIT, Jain, Mount Carmel — same-college floors when available.",
   relocate: "We pre-book before you land. Some residents move straight from the airport with one bag.",
