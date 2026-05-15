@@ -179,7 +179,7 @@ const STEPS: Record<StepId, Step> = {
     qs: "Helps me read your urgency.",
     opts: [
       { v: "hotel", e: "", t: "Hotel or temporary Airbnb", d: "Burning cash daily. Let's move fast." },
-      { v: "pg", e: "", t: "Another PG or hostel", d: "Upgrading. We'll find genuinely better." },
+      { v: "pg", e: "", t: "Another shared stay", d: "Upgrading. We'll host you genuinely better." },
       { v: "flat", e: "", t: "Flat or apartment", d: "Moving to managed - less hassle." },
       { v: "friend", e: "", t: "With a friend or family", d: "Time to get your own space." },
       { v: "nowhere", e: "", t: "Not settled yet - urgent", d: "This becomes top priority. Right now." },
