@@ -306,12 +306,12 @@ const STEPS: Record<StepId, Step> = {
   gender: {
     type: "choice", key: "gender",
     q: "This stay is for…",
-    qs: "Helps with property + community match.",
+    qs: "Helps us host you on the right floor.",
     opts: [
-      { v: "boys", e: "👨", t: "Boys / male PG", d: "Boys-only or coed - both available." },
-      { v: "girls", e: "👩", t: "Girls / female PG", d: "Girls-only or female floor - your choice." },
-      { v: "coed", e: "🤝", t: "Coed is fine", d: "Mixed-gender properties across BLR." },
-      { v: "couple", e: "👫", t: "Me and my partner", d: "Couple-friendly properties available." },
+      { v: "boys", e: "👨", t: "Him / a guy", d: "Boys-only or coed floor — your call." },
+      { v: "girls", e: "👩", t: "Her / a girl", d: "Girls-only or female floor — your call." },
+      { v: "coed", e: "🤝", t: "Coed is fine", d: "Mixed-gender floors across our homes." },
+      { v: "couple", e: "👫", t: "Me and my partner", d: "Couple-friendly homes, including 1BHKs." },
     ],
     next: () => "name",
   },
