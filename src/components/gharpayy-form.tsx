@@ -403,7 +403,7 @@ const VISIT_DYNAMIC = (d: Data) => {
       qs: "5-min tour beats 10 chats. We'll arrange it the same day if you say yes.",
       opts: [
         { v: "visit", e: "", t: "Yes - take me on a visit", d: "Walk in, see the room, meet the people." },
-        { v: "prebook", e: "", t: "Skip visit - let's pre-book", d: "I trust the verified listings. Save my spot." },
+        { v: "prebook", e: "", t: "Skip visit - let's pre-book", d: "I trust you to host me right. Save my spot." },
         { v: "skip", e: "", t: "Not yet - call me first", d: "Talk to expert before deciding." },
       ] as ChoiceOpt[],
     };
