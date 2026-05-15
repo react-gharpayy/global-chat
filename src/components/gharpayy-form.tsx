@@ -255,7 +255,7 @@ const STEPS: Record<StepId, Step> = {
     q: "Office or college name?",
     qs: "Exact name beats area — we match crowd + commute properly.",
     ph: "e.g. Infosys EC Phase 1, IIM Bangalore, Cisco Cessna…",
-    chips: ["Infosys", "Wipro", "Cisco", "Accenture", "IBM Manyata", "Embassy Tech", "ITPL", "Christ University"],
+    chips: ["Infosys", "Wipro", "Cisco", "Accenture", "IBM Manyata", "Embassy Tech", "ITPL", "Christ University", "IIM Bangalore", "RV College", "PES University", "MSRIT", "Jain University", "Mount Carmel", "St. Joseph's"],
     next: () => "budget",
   },
 
