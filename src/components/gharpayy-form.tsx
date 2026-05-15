@@ -134,7 +134,7 @@ const BUDGET_INSIGHT: Record<string, string> = {
 
 const WORRY_INSIGHT: Record<string, string> = {
   deposit: "Every paisa goes on an official Gharpayy receipt. Never a random owner's account.",
-  bad_exp: "You're not the first. Most residents tell us their old PG horror story on day 1.",
+  bad_exp: "You're not the first. Most residents share their old stay's horror story on day 1 — and never have to repeat it.",
   budget_unsure: "Tell our expert your real number. We'll be honest about what fits.",
   parents: "Parents call us all the time. We can put them on a call directly if it helps.",
   visit: "We arrange visits every single day. Walk in, see the room, meet the people.",
