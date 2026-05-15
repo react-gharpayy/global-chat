@@ -864,6 +864,8 @@ export default function GharpayyForm() {
                     selected={(data as Record<string, unknown>)[(STEPS[cur] as Extract<Step, { type: "choice" }>).key] as string | undefined}
                     onPick={(v) => pickChoice((STEPS[cur] as Extract<Step, { type: "choice" }>).key, v)}
                     onSkip={() => advance()}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
                   />
                 )}
 
@@ -873,7 +875,9 @@ export default function GharpayyForm() {
                     step={{ type: "choice", key: "visit", q: visitDyn.q, qs: visitDyn.qs, opts: visitDyn.opts, next: () => "visit_when" }}
                     selected={data.visit}
                     onPick={pickVisit}
-                    onSkip={() => { setHistory(h => [...h, "visit"]); setCur("contact"); }}
+                    onSkip={() => { setHistory(h => [...h, "visit"]); setFuture([]); setCur("contact"); }}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
                   />
                 )}
 
