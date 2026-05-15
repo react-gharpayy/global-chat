@@ -530,9 +530,24 @@ function questionFor(step: StepId, d: Data): string | null {
 // ═══════════════════════════════════════════════════════════════════════
 //  COMPONENT
 // ═══════════════════════════════════════════════════════════════════════
+// Total visible steps (rough — for "X of Y")
+const TOTAL_STEPS = 14;
+
+// ─── Auto-advance hook ───────────────────────────────────────────────
+function useAutoAdvance(value: unknown, ready: boolean, fn: () => void, ms = 900) {
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(fn, ms);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, ready]);
+}
+
 export default function GharpayyForm() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [data, setData] = useState<Data>({});
   const [history, setHistory] = useState<StepId[]>([]);
+  const [future, setFuture] = useState<StepId[]>([]);
   const [cur, setCur] = useState<StepId>("welcome");
   const [tStart, setTStart] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -571,6 +586,7 @@ export default function GharpayyForm() {
   void now;
   const elapsedSec = tStart ? Math.round((Date.now() - tStart) / 1000) : 0;
   const fullness = Math.min(100, Math.round((history.length / 16) * 100));
+  const stepNumber = Math.min(TOTAL_STEPS, history.length + 1);
 
   const advance = useCallback((nextId?: StepId) => {
     const s = STEPS[cur];
@@ -581,6 +597,7 @@ export default function GharpayyForm() {
     }
     if (!nxt) return;
     setHistory(h => [...h, cur]);
+    setFuture([]);
     setCur(nxt);
   }, [cur, data]);
 
@@ -588,8 +605,28 @@ export default function GharpayyForm() {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
     setHistory(h => h.slice(0, -1));
+    setFuture(f => [cur, ...f]);
     setCur(prev);
-  }, [history]);
+  }, [history, cur]);
+
+  const forward = useCallback(() => {
+    if (future.length === 0) return;
+    if (cur === "contact" && (data.phone || "").replace(/\D/g, "").length < 10) return;
+    const next = future[0];
+    setFuture(f => f.slice(1));
+    setHistory(h => [...h, cur]);
+    setCur(next);
+  }, [future, cur, data.phone]);
+
+  // Keyboard nav
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === "ArrowLeft") { e.preventDefault(); back(); }
+      if (e.altKey && e.key === "ArrowRight") { e.preventDefault(); forward(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [back, forward]);
 
   const setIntent = (v: string) => {
     tap();
