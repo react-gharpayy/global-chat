@@ -83,9 +83,49 @@
   --surface-glass-border: rgba(15,23,42,0.06);
   --surface-glass-gold: #FFF6D9;
   --surface-glass-gold-border: rgba(255,199,44,0.4);
+
+  /* Theme tokens used by chat UI */
+  --gp-surface: #FFFFFF;
+  --gp-surface-alt: #F7F8FA;
+  --gp-text: #111B21;
+  --gp-text-muted: #667781;
+  --gp-border: rgba(0,0,0,0.06);
+  --gp-divider: rgba(0,0,0,0.05);
+  --gp-input-bg: #F0F2F5;
+  --gp-bubble-in: #FFFFFF;
+  --gp-bubble-out: #DCF8C6;
+  --gp-chat-bg: #ECE5DD;
+  --gp-eyebrow: #128C7E;
+}
+
+[data-theme="dark"] {
+  --brand-navy: #0B141A;
+  --wa-chat-bg: #0B141A;
+  --wa-bubble: #005C4B;
+
+  --gp-surface: #202C33;
+  --gp-surface-alt: #1F2A30;
+  --gp-text: #E9EDEF;
+  --gp-text-muted: #8696A0;
+  --gp-border: rgba(255,255,255,0.06);
+  --gp-divider: rgba(255,255,255,0.06);
+  --gp-input-bg: #2A3942;
+  --gp-bubble-in: #202C33;
+  --gp-bubble-out: #005C4B;
+  --gp-chat-bg: #0B141A;
+  --gp-eyebrow: #25D366;
 }
 
 .dark { --background: 0.20 0.015 240; --foreground: 0.95 0.005 90; }
+
+/* Theme-aware overrides for chat surfaces */
+[data-theme="dark"] .wa-chat-bg { background-color: var(--gp-chat-bg); }
+[data-theme="dark"] .bubble-in,
+[data-theme="dark"] .bubble-in::before { background: var(--gp-bubble-in); color: var(--gp-text); }
+[data-theme="dark"] .bubble-out,
+[data-theme="dark"] .bubble-out::before { background: var(--gp-bubble-out); color: #E9EDEF; }
+
+html, body { transition: background-color 200ms ease, color 200ms ease; }
 
 @layer base {
   * { border-color: var(--color-border); }

@@ -1,23 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Lightbulb, Zap, Lock, Copy, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lightbulb, Zap, Lock, Copy, Check, Sun, Moon } from "lucide-react";
 import { HeaderTicker } from "@/components/header-ticker";
 import type { Lang } from "@/lib/i18n";
 
+export function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    const saved = (typeof window !== "undefined" && localStorage.getItem("gharpayy.theme")) as "light" | "dark" | null;
+    const initial: "light" | "dark" = saved ?? (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    setTheme(initial);
+  }, []);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem("gharpayy.theme", theme); } catch {}
+  }, [theme]);
+  return { theme, toggle: () => setTheme(t => t === "light" ? "dark" : "light") };
+}
+
 export function ChatHeader({
   onBack,
+  onForward,
   subtitle,
   waNumber,
   waDisplay,
   zone,
   showTicker = false,
+  theme,
+  onToggleTheme,
 }: {
   onBack?: () => void;
+  onForward?: () => void;
   subtitle?: string;
   waNumber?: string;
   waDisplay?: string;
   zone?: string;
   showTicker?: boolean;
+  theme?: "light" | "dark";
+  onToggleTheme?: () => void;
 }) {
   const [menu, setMenu] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -26,12 +47,23 @@ export function ChatHeader({
     try { await navigator.clipboard.writeText("+" + waNumber); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
   };
   return (
-    <div className="wa-header px-3 py-2.5 flex items-center gap-3 sticky top-0 z-30 shadow-md relative">
-      {onBack ? (
-        <button type="button" onClick={onBack} className="w-8 h-8 flex items-center justify-center -ml-1 rounded-full hover:bg-white/10">
-          <ChevronLeft className="w-5 h-5 text-white" />
-        </button>
-      ) : <div className="w-2" />}
+    <div className="wa-header px-3 py-2.5 flex items-center gap-2 sticky top-0 z-30 shadow-md relative">
+      <button
+        type="button"
+        onClick={onBack}
+        disabled={!onBack}
+        aria-label="Back"
+        className="w-8 h-8 flex items-center justify-center -ml-1 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent">
+        <ChevronLeft className="w-5 h-5 text-white" />
+      </button>
+      <button
+        type="button"
+        onClick={onForward}
+        disabled={!onForward}
+        aria-label="Forward"
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent">
+        <ChevronRight className="w-5 h-5 text-white" />
+      </button>
       <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-white to-emerald-50 flex items-center justify-center shadow ring-1 ring-white/30 relative overflow-hidden">
         <span className="text-[#075E54] font-black text-[15px] tracking-tight" style={{ fontFamily: "var(--font-display)" }}>G</span>
         <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#25D366] ring-2 ring-[#075E54]" />
@@ -50,6 +82,15 @@ export function ChatHeader({
               {subtitle ?? "Online now · usually replies in minutes"}
             </p>}
       </div>
+      {onToggleTheme && (
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/90">
+          {theme === "dark" ? <Sun className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} /> : <Moon className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} />}
+        </button>
+      )}
       <button
         type="button"
         onClick={() => setMenu(m => !m)}

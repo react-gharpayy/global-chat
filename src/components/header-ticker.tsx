@@ -5,10 +5,10 @@ import { lastReplyTicker, matchedToday, visitsBookedToday } from "@/lib/proof-se
 
 export function HeaderTicker({ zone }: { zone?: string }) {
   const items = [
-    `⚡ ${lastReplyTicker()}`,
-    `🏠 ${matchedToday(zone)} matched today${zone ? " in your zone" : ""}`,
-    `🚪 ${visitsBookedToday()} visits booked this morning`,
-    `✓ Online · usually replies in minutes`,
+    `${lastReplyTicker()}`,
+    `${matchedToday(zone)} matched today${zone ? " in your zone" : ""}`,
+    `${visitsBookedToday()} visits booked this morning`,
+    `Online · usually replies in minutes`,
   ];
   const [i, setI] = useState(0);
   useEffect(() => {

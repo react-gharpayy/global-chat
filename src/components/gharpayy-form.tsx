@@ -4,7 +4,7 @@ import {
   ArrowRight, Check, Phone, Home as HomeIcon,
   MessageCircle, Send, Zap, Copy, RotateCcw, Lock, Users, Sparkles,
 } from "lucide-react";
-import { ChatHeader } from "@/components/form-ui";
+import { ChatHeader, useTheme } from "@/components/form-ui";
 import { TypingDots, ReadTick } from "@/components/typing-dots";
 import { TrustRing } from "@/components/trust-ring";
 // (MatchPreview intentionally not rendered on reveal — see plan)
@@ -49,20 +49,20 @@ type Data = {
 
 // ─── Gharpayy 5 zones (from gharpayy.com) ────────────────────────────
 const ZONE_OPTS: ChoiceOpt[] = [
-  { v: "east",    e: "", t: "East — Whitefield belt",        d: "ITPL, Brookfield, Marathalli side" },
-  { v: "orr",     e: "", t: "ORR — Bellandur side",          d: "Sarjapur, Embassy Tech, RMZ" },
-  { v: "north",   e: "", t: "North — Manyata belt",          d: "Hebbal, Hennur, Yelahanka" },
-  { v: "central", e: "", t: "Central — Koramangala belt",    d: "Indiranagar, MG Road, Domlur" },
-  { v: "south",   e: "", t: "South — Electronic City belt",  d: "BTM, JP Nagar, Bommanahalli" },
+  { v: "east",    e: "", t: "East zone — Whitefield",        d: "ITPL, Brookfield, Marathalli area" },
+  { v: "orr",     e: "", t: "ORR zone — Bellandur",          d: "Sarjapur, Embassy Tech, RMZ" },
+  { v: "north",   e: "", t: "North zone — Manyata",          d: "Hebbal, Hennur, Yelahanka" },
+  { v: "central", e: "", t: "Central zone — Koramangala",    d: "Indiranagar, MG Road, Domlur" },
+  { v: "south",   e: "", t: "South zone — Electronic City",  d: "BTM, JP Nagar, Bommanahalli" },
 ];
 
 // ─── Areas / landmarks per zone (multi-select) ───────────────────────
 const ZONE_AREAS: Record<string, string[]> = {
-  east:    ["Whitefield","Brookfield","Marathalli","Mahadevapura","ITPL","EPIP","Kundalahalli","Varthur","Hoodi","KR Puram","Phoenix Marketcity","Graphite Lane","AECS Layout"],
-  orr:     ["Bellandur","Sarjapur Road","Kadubeesanahalli","Devarabeesanahalli","RMZ Ecoworld","Embassy Tech Village","Prestige Tech Park","Cessna Business Park","HSR Layout","Outer Ring Road"],
-  north:   ["Nagawara","Manyata Tech Park","Hebbal","Yeshwanthpur","Hennur","Thanisandra","Jakkur","Yelahanka","Sahakar Nagar","Airport corridor"],
-  central: ["Koramangala","Indiranagar","Vasanth Nagar","MG Road","Domlur","Ulsoor","Richmond Road","Cunningham Road","Lavelle Road","Frazer Town","Shivajinagar"],
-  south:   ["Electronic City Phase 1","Electronic City Phase 2","BTM Layout","JP Nagar","Jayanagar","Bommanahalli","Hosur Road","Bannerghatta Road","Kanakapura Road","Silk Board"],
+  east:    ["Whitefield","Brookfield","Marathalli","Mahadevapura","ITPL","EPIP","Kundalahalli","Kundalahalli Gate","Varthur","Hoodi","KR Puram","Phoenix Marketcity","Graphite Lane","AECS Layout","Kadugodi","Channasandra","Hope Farm","Sadaramangala","Doddanekundi","Garudachar Palya","Borewell Road","Forum Shantiniketan","Hagadur","Immadihalli","Pattandur Agrahara"],
+  orr:     ["Bellandur","Sarjapur Road","Kadubeesanahalli","Devarabeesanahalli","RMZ Ecoworld","Embassy Tech Village","Prestige Tech Park","Cessna Business Park","HSR Layout","Outer Ring Road","Kasavanahalli","Bagmane Tech Park","Iblur","Panathur","Carmelaram","Haralur Road","Sompura Gate","Wipro Sarjapur","Ecospace","Salarpuria Sattva","Bellandur Lake","Kaikondrahalli","Sakra Hospital"],
+  north:   ["Nagawara","Manyata Tech Park","Hebbal","Yeshwanthpur","Hennur","Thanisandra","Jakkur","Yelahanka","Sahakar Nagar","Airport corridor","RT Nagar","Banaswadi","Kalyan Nagar","HRBR Layout","Horamavu","Kammanahalli","Bhartiya City","Yelahanka New Town","Vidyaranyapura","Aerospace Park","Kogilu","Devanahalli road","Jakkur Aerodrome"],
+  central: ["Koramangala","Indiranagar","Vasanth Nagar","MG Road","Domlur","Ulsoor","Richmond Road","Cunningham Road","Lavelle Road","Frazer Town","Shivajinagar","Jeevan Bhima Nagar","HAL","New Thippasandra","CV Raman Nagar","Benson Town","Cox Town","Murphy Town","Halasuru","Brigade Road","Church Street","Commercial Street","St Marks Road","Residency Road","Langford Town"],
+  south:   ["Electronic City Phase 1","Electronic City Phase 2","BTM Layout","JP Nagar","Jayanagar","Bommanahalli","Hosur Road","Bannerghatta Road","Kanakapura Road","Silk Board","Begur","Hulimavu","Arekere","Gottigere","Chandapura","Neeladri Nagar","Singasandra","Kudlu Gate","Hongasandra","Banashankari","Uttarahalli","Konanakunte","Kanakapura main road","NICE road junction"],
 };
 
 const RADIUS_OPTS: ChoiceOpt[] = [
@@ -87,11 +87,11 @@ const fmtINR = (n: string | number) => {
 
 // ─── Insights — vibe & community of each zone (no rent talk) ─────────
 const ZONE_INSIGHT: Record<string, string> = {
-  east:    "We have full live properties here - Whitefield, Brookfield, Marathalli, Mahadevapura. ITPL/EPIP crowd, Phoenix on weekends. Strong waitlist, so worth locking early.",
+  east:    "We have full live properties across this zone — Whitefield, Brookfield, Marathalli, Mahadevapura. ITPL/EPIP crowd, Phoenix on weekends. Strong waitlist, so worth locking early.",
   orr:    "Bellandur is one of our flagship zones. Lake-view mornings, ORR tech-park afternoons. Most residents here are mid/senior engineers from Wipro, Cisco, Accenture.",
-  north:  "Nagawara + Manyata is our quietest, greenest belt. Walk-to-IBM-Manyata residents, Hebbal lake nearby, very low noise floors.",
-  central: "Koramangala + Vasanth Nagar - founders, designers, creatives. Walk to almost everything. Limited rooms here, fills fast.",
-  south:  "Electronic City - Infosys/Wipro/TCS/Biocon engineers. Predictable suburban life, your weekday becomes a 5-min commute.",
+  north:  "Nagawara + Manyata is our quietest, greenest zone. Walk-to-IBM-Manyata residents, Hebbal lake nearby, very low noise floors.",
+  central: "Koramangala + Vasanth Nagar — founders, designers, creatives. Walk to almost everything. Limited rooms in this zone, fills fast.",
+  south:  "Electronic City — Infosys/Wipro/TCS/Biocon engineers. Predictable suburban life, your weekday becomes a 5-min commute.",
 };
 
 // Story-based insight - community / what to expect
@@ -99,16 +99,20 @@ const STORY_INSIGHT: Record<string, string> = {
   newjob: "Most of our community started exactly here. We hold the room before your joining date.",
   upgrade: "9 in 10 residents came from a PG that didn't work out. We listen first, match second.",
   intern: "Flexible 2-6 month stays, no lock-in. Plenty of interns convert to full-time in the same room.",
+  student: "We have student clusters near Christ, IIM-B, RV, PES, MSRIT, Jain, Mount Carmel — same-college floors when available.",
   relocate: "We pre-book before you land. Some residents move straight from the airport with one bag.",
   blr: "Quiet neighbours, working WiFi, owner who actually picks up. Boring stuff done right changes your day.",
   explore: "No pressure. You'll see real options - even imperfect ones, told honestly.",
 };
 
 // Workplace hint - empathy reply
-function workplaceInsight(work?: string, zone?: string) {
+function workplaceInsight(work?: string, zone?: string, story?: string) {
   if (!work) return null;
-  const z = zone ? ZONE_OPTS.find(x => x.v === zone)?.t.split(" - ")[1] : "your zone";
-  return `Got it - ${work}. We'll match places where commute stays under 25 min from ${z ?? "there"}. That's the real metric.`;
+  const z = zone ? ZONE_OPTS.find(x => x.v === zone)?.t.split(" — ")[1] : "your zone";
+  if (story === "student") {
+    return `Got it — ${work}. We'll match you with same-college residents wherever possible, and keep commute under 20 min from ${z ?? "campus"}.`;
+  }
+  return `Got it — ${work}. We'll match places where commute stays under 25 min from ${z ?? "there"}. That's the real metric.`;
 }
 
 const BUDGET_INSIGHT: Record<string, string> = {
@@ -137,7 +141,8 @@ const STEPS: Record<StepId, Step> = {
     q: "What's your situation right now?",
     qs: "Tell me honestly. Shapes everything I'll find for you.",
     opts: [
-      { v: "newjob", e: "", t: "New job offer / starting college", d: "Exciting chapter. Let's settle you right." },
+      { v: "newjob", e: "", t: "New job offer / starting work", d: "Exciting chapter. Let's settle you right." },
+      { v: "student", e: "", t: "Student starting at college / university", d: "Hostel-tired or first-time mover. Campus-zone stays ready." },
       { v: "upgrade", e: "", t: "Current PG isn't working out", d: "We know that feeling. Let's fix it properly." },
       { v: "intern", e: "", t: "Short internship - 2 to 6 months", d: "Flexible, no lock-in." },
       { v: "relocate", e: "", t: "Moving to Bangalore from another city", d: "New city, blank slate. We'll smooth it out." },
@@ -214,7 +219,7 @@ const STEPS: Record<StepId, Step> = {
   zone: {
     type: "choice", key: "zone",
     q: "Which Gharpayy zone fits your day?",
-    qs: "5 belts where we actually run properties. Pick the one closest to your daily life.",
+    qs: "5 zones where we actually run properties. Pick the one closest to your daily life.",
     opts: ZONE_OPTS,
     next: () => "zone_areas",
   },
@@ -250,7 +255,7 @@ const STEPS: Record<StepId, Step> = {
     q: "Office or college name?",
     qs: "Exact name beats area — we match crowd + commute properly.",
     ph: "e.g. Infosys EC Phase 1, IIM Bangalore, Cisco Cessna…",
-    chips: ["Infosys", "Wipro", "Cisco", "Accenture", "IBM Manyata", "Embassy Tech", "ITPL", "Christ University"],
+    chips: ["Infosys", "Wipro", "Cisco", "Accenture", "IBM Manyata", "Embassy Tech", "ITPL", "Christ University", "IIM Bangalore", "RV College", "PES University", "MSRIT", "Jain University", "Mount Carmel", "St. Joseph's"],
     next: () => "budget",
   },
 
@@ -406,12 +411,12 @@ const VISIT_DYNAMIC = (d: Data) => {
 
 // ─── Labels ──────────────────────────────────────────────────────────
 const L_INTENT: Record<string,string> = { perfect:"Most homely stay", budget:"Most affordable", nearby:"Close to office/college", safe:"Safety & trust priority" };
-const L_STORY: Record<string,string> = { newjob:"New job/college start", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
+const L_STORY: Record<string,string> = { newjob:"New job/college start", student:"Student", upgrade:"Upgrading PG", intern:"Internship", relocate:"Relocating to BLR", blr:"Already in BLR - upgrading", explore:"Exploring options" };
 const L_CURR: Record<string,string> = { hotel:"Hotel (temp)", pg:"PG/hostel", flat:"Flat/apartment", friend:"Friend/family", nowhere:"URGENT - not settled" };
 const L_NOTICE: Record<string,string> = { given:"Notice given", not_yet:"Not yet", difficult:"Complicated", free:"No contract" };
 const L_ARRIVAL: Record<string,string> = { thisweek:"This week", thismonth:"This month", nextmonth:"Next month", later:"2-3 months out" };
 const L_MOVEIN: Record<string,string> = { now:"ASAP - urgent","2wk":"Within 2 weeks", month:"Month-end", next:"Next month or later" };
-const L_ZONE: Record<string,string> = { east:"East (Whitefield belt)", orr:"ORR (Bellandur)", north:"North (Manyata belt)", central:"Central (Koramangala/Vasanth Nagar)", south:"South (Electronic City)" };
+const L_ZONE: Record<string,string> = { east:"East zone (Whitefield)", orr:"ORR zone (Bellandur)", north:"North zone (Manyata)", central:"Central zone (Koramangala/Vasanth Nagar)", south:"South zone (Electronic City)" };
 const L_BUDGET: Record<string,string> = { basic:"BASIC ₹7k-11k", classic:"CLASSIC ₹12k-17k", prive:"PRIVE ₹17k-26k", luxemax:"LUXE MAX ₹25k-45k" };
 const L_ROOM: Record<string,string> = { private:"Private room", double:"Double sharing", triple:"Triple sharing", flex:"Best deal (flexible)" };
 const L_GENDER: Record<string,string> = { boys:"Male PG", girls:"Female PG", coed:"Coed", couple:"Couple" };
@@ -500,7 +505,7 @@ function echoFor(step: StepId, d: Data): string | null {
 function insightFor(step: StepId, d: Data): string | null {
   if (step === "story" && d.story) return STORY_INSIGHT[d.story] || null;
   if (step === "zone" && d.zone) return ZONE_INSIGHT[d.zone] || null;
-  if (step === "workplace" && d.workplace) return workplaceInsight(d.workplace, d.zone);
+  if (step === "workplace" && d.workplace) return workplaceInsight(d.workplace, d.zone, d.story);
   if (step === "budget" && d.budget) return BUDGET_INSIGHT[d.budget] || null;
   if (step === "worry" && d.worry) return WORRY_INSIGHT[d.worry] || null;
   return null;
@@ -525,9 +530,24 @@ function questionFor(step: StepId, d: Data): string | null {
 // ═══════════════════════════════════════════════════════════════════════
 //  COMPONENT
 // ═══════════════════════════════════════════════════════════════════════
+// Total visible steps (rough — for "X of Y")
+const TOTAL_STEPS = 14;
+
+// ─── Auto-advance hook ───────────────────────────────────────────────
+function useAutoAdvance(value: unknown, ready: boolean, fn: () => void, ms = 900) {
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(fn, ms);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, ready]);
+}
+
 export default function GharpayyForm() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [data, setData] = useState<Data>({});
   const [history, setHistory] = useState<StepId[]>([]);
+  const [future, setFuture] = useState<StepId[]>([]);
   const [cur, setCur] = useState<StepId>("welcome");
   const [tStart, setTStart] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -566,6 +586,7 @@ export default function GharpayyForm() {
   void now;
   const elapsedSec = tStart ? Math.round((Date.now() - tStart) / 1000) : 0;
   const fullness = Math.min(100, Math.round((history.length / 16) * 100));
+  const stepNumber = Math.min(TOTAL_STEPS, history.length + 1);
 
   const advance = useCallback((nextId?: StepId) => {
     const s = STEPS[cur];
@@ -576,6 +597,7 @@ export default function GharpayyForm() {
     }
     if (!nxt) return;
     setHistory(h => [...h, cur]);
+    setFuture([]);
     setCur(nxt);
   }, [cur, data]);
 
@@ -583,14 +605,35 @@ export default function GharpayyForm() {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
     setHistory(h => h.slice(0, -1));
+    setFuture(f => [cur, ...f]);
     setCur(prev);
-  }, [history]);
+  }, [history, cur]);
+
+  const forward = useCallback(() => {
+    if (future.length === 0) return;
+    if (cur === "contact" && (data.phone || "").replace(/\D/g, "").length < 10) return;
+    const next = future[0];
+    setFuture(f => f.slice(1));
+    setHistory(h => [...h, cur]);
+    setCur(next);
+  }, [future, cur, data.phone]);
+
+  // Keyboard nav
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === "ArrowLeft") { e.preventDefault(); back(); }
+      if (e.altKey && e.key === "ArrowRight") { e.preventDefault(); forward(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [back, forward]);
 
   const setIntent = (v: string) => {
     tap();
     setData(d => ({ ...d, intent: v }));
     if (!tStart) setTStart(Date.now());
     setHistory(h => [...h, "welcome"]);
+    setFuture([]);
     setCur("story");
   };
 
@@ -602,8 +645,9 @@ export default function GharpayyForm() {
       if (s.type === "choice") {
         setTimeout(() => {
           setHistory(h => [...h, cur]);
+          setFuture([]);
           setCur(s.next(next));
-        }, 280);
+        }, 220);
       }
       return next;
     });
@@ -616,8 +660,9 @@ export default function GharpayyForm() {
       const next = { ...d, visit: v };
       setTimeout(() => {
         setHistory(h => [...h, "visit"]);
+        setFuture([]);
         setCur(v === "skip" ? "contact" : "visit_when");
-      }, 280);
+      }, 220);
       return next;
     });
   };
@@ -637,6 +682,7 @@ export default function GharpayyForm() {
     if (!data.name?.trim()) return;
     tap();
     setHistory(h => [...h, "name"]);
+    setFuture([]);
     setCur("matters");
   };
 
@@ -644,6 +690,7 @@ export default function GharpayyForm() {
     if ((data.phone || "").replace(/\D/g, "").length < 10) return;
     setElapsed(tStart ? Math.round((Date.now() - tStart) / 1000) : 0);
     setHistory(h => [...h, "contact"]);
+    setFuture([]);
     setSubmitting(true);
   };
 
@@ -654,7 +701,7 @@ export default function GharpayyForm() {
   }, []);
 
   const restart = () => {
-    setData({}); setHistory([]); setCur("welcome"); setTStart(null); setElapsed(0);
+    setData({}); setHistory([]); setFuture([]); setCur("welcome"); setTStart(null); setElapsed(0);
     setCustomNum(""); setShowCustom(false);
   };
 
@@ -703,11 +750,14 @@ export default function GharpayyForm() {
       <div className="w-full max-w-md relative min-h-[100dvh] flex flex-col overflow-hidden wa-chat-bg">
         <ChatHeader
           onBack={isInteractive && history.length > 0 && !submitting ? back : undefined}
+          onForward={isInteractive && future.length > 0 && !submitting ? forward : undefined}
           subtitle={subtitle}
           waNumber={GHARPAYY_WA}
           waDisplay={GHARPAYY_WA_DISPLAY}
           zone={data.zone}
           showTicker={isInteractive}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {isInteractive && (
@@ -814,6 +864,8 @@ export default function GharpayyForm() {
                     selected={(data as Record<string, unknown>)[(STEPS[cur] as Extract<Step, { type: "choice" }>).key] as string | undefined}
                     onPick={(v) => pickChoice((STEPS[cur] as Extract<Step, { type: "choice" }>).key, v)}
                     onSkip={() => advance()}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
                   />
                 )}
 
@@ -823,77 +875,22 @@ export default function GharpayyForm() {
                     step={{ type: "choice", key: "visit", q: visitDyn.q, qs: visitDyn.qs, opts: visitDyn.opts, next: () => "visit_when" }}
                     selected={data.visit}
                     onPick={pickVisit}
-                    onSkip={() => { setHistory(h => [...h, "visit"]); setCur("contact"); }}
+                    onSkip={() => { setHistory(h => [...h, "visit"]); setFuture([]); setCur("contact"); }}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
                   />
                 )}
 
                 {/* BUDGET EXACT (per-tier chips + custom + food toggle) */}
-                {cur === "budget_exact" && (() => {
-                  const tier = data.budget || "basic";
-                  const opts = BUDGET_EXACT_OPTS[tier] || [];
-                  const tierLabel = L_BUDGET[tier] || "this tier";
-                  const isCustom = data.budget_exact === "custom";
-                  return (
-                    <>
-                      <Bubble side="in" delay={0.05}>
-                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">Real monthly ceiling inside {tierLabel}?</p>
-                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">Honest number means we only show stays that fit. One tap saves a 20-min back-and-forth call later.</p>
-                      </Bubble>
-                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                        <div className="flex flex-wrap gap-1.5">
-                          {opts.map(n => {
-                            const on = data.budget_exact === n;
-                            return (
-                              <button key={n} type="button"
-                                onClick={() => { tap(); setData(d => ({ ...d, budget_exact: n, budget_exact_custom: undefined })); }}
-                                className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
-                                {fmtINR(n)}
-                              </button>
-                            );
-                          })}
-                          <button type="button"
-                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "flex", budget_exact_custom: undefined })); }}
-                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${data.budget_exact === "flex" ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#128C7E] border-[#25D366]/40 hover:bg-[#25D366]/10"}`}>
-                            Flexible inside tier
-                          </button>
-                          <button type="button"
-                            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "custom" })); }}
-                            className={`px-3 py-2 rounded-full text-[13px] font-semibold border border-dashed transition-all ${isCustom ? "bg-[#25D366]/10 text-[#128C7E] border-[#128C7E]" : "text-[#128C7E] border-[#128C7E]/40 hover:bg-[#25D366]/5"}`}>
-                            + Set my own number
-                          </button>
-                        </div>
-                        {isCustom && (
-                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
-                            <input type="number" inputMode="numeric" placeholder="e.g. 18500"
-                              value={data.budget_exact_custom || ""}
-                              onChange={e => setData(d => ({ ...d, budget_exact_custom: e.target.value.replace(/\D/g, "") }))}
-                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                            <p className="text-[10.5px] text-[#667781] mt-1.5">Per month, in rupees.</p>
-                          </div>
-                        )}
-                        <div className="mt-3 pt-2.5 border-t border-black/5">
-                          <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] mb-1.5">Food</p>
-                          <div className="flex gap-1.5">
-                            {(["included","extra"] as const).map(f => {
-                              const on = data.food_pref === f;
-                              return (
-                                <button key={f} type="button"
-                                  onClick={() => { tap(); setData(d => ({ ...d, food_pref: on ? undefined : f })); }}
-                                  className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366]"}`}>
-                                  {on && "✓ "}{L_FOOD[f]}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                      <ContinueBtn
-                        disabled={!data.budget_exact || (isCustom && !(data.budget_exact_custom || "").length)}
-                        onClick={() => advance()}
-                      />
-                    </>
-                  );
-                })()}
+                {cur === "budget_exact" && (
+                  <BudgetExactBlock
+                    data={data}
+                    setData={setData}
+                    onAdvance={() => advance()}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
+                  />
+                )}
 
 
                 {/* TEXT */}
@@ -901,62 +898,30 @@ export default function GharpayyForm() {
                   const s = STEPS[cur] as Extract<Step, { type: "text" }>;
                   const val = (data as Record<string, unknown>)[s.key] as string | undefined;
                   return (
-                    <>
-                      <Bubble side="in" delay={0.05}>
-                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">{s.q}</p>
-                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{s.qs}</p>
-                      </Bubble>
-                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                        <input ref={inputRef} type="text"
-                          placeholder={s.ph}
-                          value={val || ""}
-                          onChange={e => setData(d => ({ ...d, [s.key]: e.target.value }))}
-                          onKeyDown={e => { if (e.key === "Enter" && (val || "").length > 1) advance(); }}
-                          className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
-                        {s.chips && (
-                          <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-black/5">
-                            {s.chips.map(c => (
-                              <button key={c} type="button"
-                                onClick={() => setData(d => ({ ...d, [s.key]: c }))}
-                                className="px-2.5 py-1 rounded-full text-[11px] font-medium text-[#128C7E] bg-[#25D366]/8 hover:bg-[#25D366]/15 border border-[#25D366]/20 transition-colors">
-                                {c}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => advance()}
-                          className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
-                          Skip
-                        </button>
-                        <ContinueBtn
-                          disabled={!s.optional && (!(val || "").length || (val || "").length < 2)}
-                          onClick={() => advance()}
-                          className="flex-1"
-                        />
-                      </div>
-                    </>
+                    <TextBlock
+                      step={s}
+                      val={val}
+                      inputRef={inputRef}
+                      onChange={v => setData(d => ({ ...d, [s.key]: v }))}
+                      onAdvance={() => advance()}
+                      stepNumber={stepNumber}
+                      total={TOTAL_STEPS}
+                    />
                   );
                 })()}
 
                 {/* NAME (mid-flow, friendlier than contact form) */}
                 {STEPS[cur].type === "name" && (
-                  <>
-                    <Bubble side="in" delay={0.05}>
-                      <p className="text-[15px] font-bold text-[#111B21] leading-snug">{(STEPS[cur] as Extract<Step, { type: "name" }>).q}</p>
-                      <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{(STEPS[cur] as Extract<Step, { type: "name" }>).qs}</p>
-                    </Bubble>
-                    <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                      <input ref={inputRef} type="text"
-                        placeholder="First name"
-                        value={data.name || ""}
-                        onChange={e => setData(d => ({ ...d, name: e.target.value }))}
-                        onKeyDown={e => { if (e.key === "Enter" && (data.name || "").trim().length > 0) submitName(); }}
-                        className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
-                    </div>
-                    <ContinueBtn disabled={!(data.name || "").trim()} onClick={submitName} />
-                  </>
+                  <NameBlock
+                    q={(STEPS[cur] as Extract<Step, { type: "name" }>).q}
+                    qs={(STEPS[cur] as Extract<Step, { type: "name" }>).qs}
+                    name={data.name}
+                    inputRef={inputRef}
+                    onChange={v => setData(d => ({ ...d, name: v }))}
+                    onSubmit={submitName}
+                    stepNumber={stepNumber}
+                    total={TOTAL_STEPS}
+                  />
                 )}
 
                 {/* MULTI */}
@@ -967,60 +932,19 @@ export default function GharpayyForm() {
                   const opts = isAreas ? (ZONE_AREAS[data.zone || ""] || []) : s.opts;
                   const otherTarget: StepId | null = cur === "matters" ? "matters_other" : null;
                   return (
-                    <>
-                      <Bubble side="in" delay={0.05}>
-                        <p className="text-[15px] font-bold text-[#111B21] leading-snug">{s.q}</p>
-                        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{s.qs}</p>
-                      </Bubble>
-                      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
-                        <div className="flex flex-wrap gap-1.5">
-                          {opts.map(o => {
-                            const on = arr.includes(o);
-                            const disabled = !on && arr.length >= s.max;
-                            return (
-                              <button key={o} type="button"
-                                disabled={disabled}
-                                onClick={() => toggleMulti(s.key, o, s.max)}
-                                className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : disabled ? "bg-black/5 text-black/30 border-transparent cursor-not-allowed" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
-                                {on && "✓ "}{o}
-                              </button>
-                            );
-                          })}
-                          {s.allowOther && otherTarget && (
-                            <button type="button"
-                              onClick={() => { setHistory(h => [...h, cur]); setCur(otherTarget); }}
-                              className="px-3 py-1.5 rounded-full text-[12.5px] font-medium border border-dashed border-[#128C7E]/40 text-[#128C7E] bg-[#25D366]/5 hover:bg-[#25D366]/10">
-                              + Write your own
-                            </button>
-                          )}
-                        </div>
-                        {isAreas && (
-                          <div className="mt-2.5 pt-2.5 border-t border-black/5">
-                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] block mb-1">+ Add another area</label>
-                            <input type="text" placeholder="e.g. Kasavanahalli, Bagmane Tech Park"
-                              value={data.area_other || ""}
-                              onChange={e => setData(d => ({ ...d, area_other: e.target.value }))}
-                              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
-                          </div>
-                        )}
-                        <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
-                          {arr.length} of {s.max} selected
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        {s.optional && (
-                          <button type="button" onClick={() => advance()}
-                            className="flex-1 py-3 rounded-full text-[13px] font-semibold text-[#667781] bg-white border border-black/10 hover:border-black/20">
-                            Skip
-                          </button>
-                        )}
-                        <ContinueBtn
-                          disabled={!s.optional && arr.length === 0 && !(isAreas && (data.area_other || "").trim().length > 0)}
-                          onClick={() => advance()}
-                          className="flex-1"
-                        />
-                      </div>
-                    </>
+                    <MultiBlock
+                      step={s}
+                      arr={arr}
+                      opts={opts}
+                      isAreas={isAreas}
+                      areaOther={data.area_other || ""}
+                      setAreaOther={v => setData(d => ({ ...d, area_other: v }))}
+                      onToggle={v => toggleMulti(s.key, v, s.max)}
+                      onWriteOther={otherTarget ? () => { setHistory(h => [...h, cur]); setFuture([]); setCur(otherTarget); } : undefined}
+                      onAdvance={() => advance()}
+                      stepNumber={stepNumber}
+                      total={TOTAL_STEPS}
+                    />
                   );
                 })()}
 
@@ -1192,21 +1116,38 @@ export default function GharpayyForm() {
   );
 }
 
+// ─── Question card: eyebrow + step number + Q + sub ─────────────────
+function QuestionCard({ q, qs, stepNumber, total }: { q: string; qs: string; stepNumber?: number; total?: number }) {
+  return (
+    <Bubble side="in" delay={0.05}>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold tracking-wider uppercase" style={{ background: "rgba(18,140,126,0.12)", color: "#128C7E" }}>
+          Question{stepNumber && total ? ` ${stepNumber} of ${total}` : ""}
+        </span>
+      </div>
+      <p className="text-[16px] font-bold text-[#111B21] leading-snug" style={{ fontFamily: "var(--font-display)" }}>{q}</p>
+      {qs && <p className="text-[12.5px] text-[#667781] mt-1.5 leading-snug">{qs}</p>}
+    </Bubble>
+  );
+}
+
+const ABCD = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
 // ─── Reusable choice block ──────────────────────────────────────────
 function ChoiceBlock({
-  step, selected, onPick, onSkip,
+  step, selected, onPick, onSkip, stepNumber, total,
 }: {
   step: Extract<Step, { type: "choice" }>;
   selected: string | undefined;
   onPick: (v: string) => void;
   onSkip: () => void;
+  stepNumber?: number;
+  total?: number;
 }) {
   return (
     <>
-      <Bubble side="in" delay={0.05}>
-        <p className="text-[15px] font-bold text-[#111B21] leading-snug">{step.q}</p>
-        <p className="text-[12.5px] text-[#667781] mt-1 leading-snug">{step.qs}</p>
-      </Bubble>
+      <QuestionCard q={step.q} qs={step.qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Tap to choose</p>
       <div className="space-y-2">
         {step.opts.map((o, i) => {
           const on = selected === o.v;
@@ -1216,8 +1157,13 @@ function ChoiceBlock({
               transition={{ delay: 0.1 + i * 0.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => onPick(o.v)}
+              data-step={step.key}
+              data-answer-key={o.v}
+              aria-label={`${ABCD[i]}: ${o.t}`}
               className={`w-full flex items-center gap-3 rounded-2xl p-3 min-h-[56px] text-left border shadow-sm transition-all ${on ? "bg-[#DCF8C6] border-[#25D366]" : "bg-white border-black/5 hover:border-[#25D366]/40"}`}>
-              {o.e && <span className="text-base flex-shrink-0 w-6 text-center opacity-70">{o.e}</span>}
+              <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-extrabold ${on ? "bg-[#25D366] text-white" : "bg-black/5 text-[#667781]"}`}>
+                {ABCD[i]}
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#111B21] text-[13.5px] leading-tight">{o.t}</p>
                 <p className="text-[11px] text-[#667781] mt-0.5 leading-tight">{o.d}</p>
@@ -1338,4 +1284,253 @@ function summaryRows(d: Data): [string, string][] {
     ["Phone", d.phone],
   ];
   return rows.filter(([, v]) => v).map(([k, v]) => [k, v as string]);
+}
+
+// ─── Auto-advance pill (saved · moving on…) ──────────────────────────
+function AutoAdvancePill({ label = "Saved · moving on…" }: { label?: string }) {
+  return (
+    <div className="self-center px-3 py-1.5 rounded-full bg-[#25D366]/10 border border-[#25D366]/30 text-[11px] font-semibold text-[#128C7E] flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+      {label}
+    </div>
+  );
+}
+
+// ─── BUDGET EXACT block ──────────────────────────────────────────────
+function BudgetExactBlock({
+  data, setData, onAdvance, stepNumber, total,
+}: {
+  data: Data;
+  setData: React.Dispatch<React.SetStateAction<Data>>;
+  onAdvance: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const tier = data.budget || "basic";
+  const opts = BUDGET_EXACT_OPTS[tier] || [];
+  const tierLabel = L_BUDGET[tier] || "this tier";
+  const isCustom = data.budget_exact === "custom";
+  const ready = !!data.budget_exact && (!isCustom || (data.budget_exact_custom || "").length >= 3);
+  useAutoAdvance(`${data.budget_exact}|${data.budget_exact_custom}|${data.food_pref}`, ready, onAdvance, isCustom ? 1100 : 800);
+  return (
+    <>
+      <QuestionCard q={`Real monthly ceiling inside ${tierLabel}?`}
+        qs="Honest number means we only show stays that fit. One tap saves a 20-min back-and-forth call later."
+        stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Tap your number</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <div className="flex flex-wrap gap-1.5">
+          {opts.map(n => {
+            const on = data.budget_exact === n;
+            return (
+              <button key={n} type="button"
+                onClick={() => { tap(); setData(d => ({ ...d, budget_exact: n, budget_exact_custom: undefined })); }}
+                className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                {fmtINR(n)}
+              </button>
+            );
+          })}
+          <button type="button"
+            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "flex", budget_exact_custom: undefined })); }}
+            className={`px-3 py-2 rounded-full text-[13px] font-semibold border transition-all ${data.budget_exact === "flex" ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#128C7E] border-[#25D366]/40 hover:bg-[#25D366]/10"}`}>
+            Flexible inside tier
+          </button>
+          <button type="button"
+            onClick={() => { tap(); setData(d => ({ ...d, budget_exact: "custom" })); }}
+            className={`px-3 py-2 rounded-full text-[13px] font-semibold border border-dashed transition-all ${isCustom ? "bg-[#25D366]/10 text-[#128C7E] border-[#128C7E]" : "text-[#128C7E] border-[#128C7E]/40 hover:bg-[#25D366]/5"}`}>
+            + Set my own number
+          </button>
+        </div>
+        {isCustom && (
+          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+            <input type="number" inputMode="numeric" placeholder="e.g. 18500" autoFocus
+              value={data.budget_exact_custom || ""}
+              onChange={e => setData(d => ({ ...d, budget_exact_custom: e.target.value.replace(/\D/g, "") }))}
+              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[14px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+            <p className="text-[10.5px] text-[#667781] mt-1.5">Per month, in rupees.</p>
+          </div>
+        )}
+        <div className="mt-3 pt-2.5 border-t border-black/5">
+          <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] mb-1.5">Food</p>
+          <div className="flex gap-1.5">
+            {(["included","extra"] as const).map(f => {
+              const on = data.food_pref === f;
+              return (
+                <button key={f} type="button"
+                  onClick={() => { tap(); setData(d => ({ ...d, food_pref: on ? undefined : f })); }}
+                  className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366]"}`}>
+                  {on && "✓ "}{L_FOOD[f]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      {ready && <AutoAdvancePill />}
+    </>
+  );
+}
+
+// ─── TEXT block (auto-advance after 900ms idle) ──────────────────────
+function TextBlock({
+  step, val, inputRef, onChange, onAdvance, stepNumber, total,
+}: {
+  step: Extract<Step, { type: "text" }>;
+  val: string | undefined;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onChange: (v: string) => void;
+  onAdvance: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const minLen = step.optional ? 1 : 2;
+  const ready = (val || "").trim().length >= minLen;
+  useAutoAdvance(val, ready, onAdvance, 900);
+  return (
+    <>
+      <QuestionCard q={step.q} qs={step.qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Type your answer</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <input ref={inputRef} type="text"
+          placeholder={step.ph}
+          value={val || ""}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && (val || "").length > 1) onAdvance(); }}
+          className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+        {step.chips && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-black/5">
+            {step.chips.map(c => (
+              <button key={c} type="button"
+                onClick={() => onChange(c)}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium text-[#128C7E] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 transition-colors">
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {ready ? <AutoAdvancePill /> : (
+        step.optional && (
+          <button type="button" onClick={onAdvance}
+            className="self-center text-[11.5px] text-[#667781] hover:text-[#25D366] py-1.5 px-3 rounded-full transition-colors">
+            Skip →
+          </button>
+        )
+      )}
+    </>
+  );
+}
+
+// ─── NAME block (auto-advance after 900ms idle) ──────────────────────
+function NameBlock({
+  q, qs, name, inputRef, onChange, onSubmit, stepNumber, total,
+}: {
+  q: string; qs: string;
+  name: string | undefined;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const ready = (name || "").trim().length >= 1;
+  useAutoAdvance(name, ready, onSubmit, 900);
+  return (
+    <>
+      <QuestionCard q={q} qs={qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Type your first name</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <input ref={inputRef} type="text"
+          placeholder="First name"
+          value={name || ""}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && ready) onSubmit(); }}
+          className="w-full bg-transparent text-[15px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none" />
+      </div>
+      {ready && <AutoAdvancePill />}
+    </>
+  );
+}
+
+// ─── MULTI block (live countdown after last toggle) ──────────────────
+function MultiBlock({
+  step, arr, opts, isAreas, areaOther, setAreaOther, onToggle, onWriteOther, onAdvance, stepNumber, total,
+}: {
+  step: Extract<Step, { type: "multi" }>;
+  arr: string[];
+  opts: string[];
+  isAreas: boolean;
+  areaOther: string;
+  setAreaOther: (v: string) => void;
+  onToggle: (v: string) => void;
+  onWriteOther?: () => void;
+  onAdvance: () => void;
+  stepNumber?: number;
+  total?: number;
+}) {
+  const ready = arr.length > 0 || (isAreas && areaOther.trim().length > 0);
+  // 2.5s window after any change; reset on each toggle / area_other edit
+  const [countdown, setCountdown] = useState(0);
+  useEffect(() => {
+    if (!ready) { setCountdown(0); return; }
+    setCountdown(3);
+    const t1 = setTimeout(() => setCountdown(2), 800);
+    const t2 = setTimeout(() => setCountdown(1), 1600);
+    const t3 = setTimeout(() => { setCountdown(0); onAdvance(); }, 2500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arr.join("|"), areaOther]);
+  return (
+    <>
+      <QuestionCard q={step.q} qs={step.qs} stepNumber={stepNumber} total={total} />
+      <p className="text-[9.5px] font-bold uppercase tracking-wider px-1 text-[#667781]">Tap any that apply</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm border border-black/5">
+        <div className="flex flex-wrap gap-1.5">
+          {opts.map(o => {
+            const on = arr.includes(o);
+            const disabled = !on && arr.length >= step.max;
+            return (
+              <button key={o} type="button"
+                disabled={disabled}
+                onClick={() => onToggle(o)}
+                className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium border transition-all ${on ? "bg-[#25D366] text-white border-[#25D366]" : disabled ? "bg-black/5 text-black/30 border-transparent cursor-not-allowed" : "bg-white text-[#111B21] border-black/10 hover:border-[#25D366] hover:bg-[#25D366]/5"}`}>
+                {on && "✓ "}{o}
+              </button>
+            );
+          })}
+          {step.allowOther && onWriteOther && (
+            <button type="button"
+              onClick={onWriteOther}
+              className="px-3 py-1.5 rounded-full text-[12.5px] font-medium border border-dashed border-[#128C7E]/40 text-[#128C7E] bg-[#25D366]/5 hover:bg-[#25D366]/10">
+              + Write your own
+            </button>
+          )}
+        </div>
+        {isAreas && (
+          <div className="mt-2.5 pt-2.5 border-t border-black/5">
+            <label className="text-[10.5px] font-bold uppercase tracking-wider text-[#667781] block mb-1">+ Add another area</label>
+            <input type="text" placeholder="e.g. Kasavanahalli, Bagmane Tech Park"
+              value={areaOther}
+              onChange={e => setAreaOther(e.target.value)}
+              className="w-full bg-[#F0F2F5] rounded-xl px-3 py-2 text-[13px] text-[#111B21] placeholder:text-[#9aa6ad] outline-none focus:ring-2 focus:ring-[#25D366]/30" />
+          </div>
+        )}
+        <p className="text-[11px] text-[#667781] mt-2.5 pt-2.5 border-t border-black/5">
+          {arr.length} of {step.max} selected
+        </p>
+      </div>
+      {ready && countdown > 0 ? (
+        <button type="button" onClick={onAdvance}
+          className="self-center px-3 py-1.5 rounded-full bg-[#25D366]/10 border border-[#25D366]/30 text-[11px] font-semibold text-[#128C7E] flex items-center gap-1.5 hover:bg-[#25D366]/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+          Auto-continuing in {countdown}… (tap to skip wait)
+        </button>
+      ) : step.optional && !ready ? (
+        <button type="button" onClick={onAdvance}
+          className="self-center text-[11.5px] text-[#667781] hover:text-[#25D366] py-1.5 px-3 rounded-full transition-colors">
+          Skip →
+        </button>
+      ) : null}
+    </>
+  );
 }
