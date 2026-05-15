@@ -153,7 +153,7 @@ const STEPS: Record<StepId, Step> = {
     opts: [
       { v: "newjob", e: "", t: "New job offer / starting work", d: "Exciting chapter. Let's settle you right." },
       { v: "student", e: "", t: "Student starting at college / university", d: "Hostel-tired or first-time mover. Campus-zone stays ready." },
-      { v: "upgrade", e: "", t: "Current PG isn't working out", d: "We know that feeling. Let's fix it properly." },
+      { v: "upgrade", e: "", t: "Current stay isn't working out", d: "We know that feeling. Let's host you properly this time." },
       { v: "intern", e: "", t: "Short internship - 2 to 6 months", d: "Flexible, no lock-in." },
       { v: "relocate", e: "", t: "Moving to Bangalore from another city", d: "New city, blank slate. We'll smooth it out." },
       { v: "blr", e: "", t: "Already in BLR, want something better", d: "You deserve better than what you have now." },
