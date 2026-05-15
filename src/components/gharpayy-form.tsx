@@ -16,6 +16,17 @@ import { tap, success } from "@/lib/haptics";
 const GHARPAYY_WA = "917988114576";
 const GHARPAYY_WA_DISPLAY = "+91 79881 14576";
 
+// Per-zone & student WhatsApp numbers. Replace the zone numbers with your real
+// zone-manager lines whenever you have them — student is the one you provided.
+const ZONE_WA: Record<string, { wa: string; display: string; label: string; sub: string }> = {
+  east:    { wa: "917988114576", display: "+91 79881 14576", label: "East zone — Whitefield",        sub: "ITPL · Brookfield · Marathalli" },
+  orr:     { wa: "917988114576", display: "+91 79881 14576", label: "ORR zone — Bellandur",          sub: "Sarjapur · Embassy Tech · RMZ" },
+  north:   { wa: "917988114576", display: "+91 79881 14576", label: "North zone — Manyata",          sub: "Hebbal · Hennur · Yelahanka" },
+  central: { wa: "917988114576", display: "+91 79881 14576", label: "Central zone — Koramangala",    sub: "Indiranagar · MG Road · Domlur" },
+  south:   { wa: "917988114576", display: "+91 79881 14576", label: "South zone — Electronic City",  sub: "BTM · JP Nagar · Bommanahalli" },
+};
+const STUDENT_WA = { wa: "919118388864", display: "+91 91183 88864", label: "Student desk", sub: "College & university stays" };
+
 // ─── Types ───────────────────────────────────────────────────────────
 type StepId =
   | "welcome" | "story" | "in_blr" | "curr_stay" | "notice"
@@ -1078,6 +1089,37 @@ export default function GharpayyForm() {
                           )}
                         </div>
                       )}
+                    </div>
+
+                    {/* Zone-specific WhatsApp picker */}
+                    <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#667781] mb-1">Reach your zone directly</p>
+                      <p className="text-[12px] text-[#667781] leading-snug mb-3">Each Gharpayy zone has its own expert on WhatsApp. Tap the one that fits — your full brief is pre-filled.</p>
+                      <div className="space-y-2">
+                        {(data.story === "student" ? [{ key: "student", ...STUDENT_WA }] : [])
+                          .concat(Object.entries(ZONE_WA).map(([k, v]) => ({ key: k, ...v })))
+                          .map((z) => {
+                            const url = `https://wa.me/${z.wa}?text=${encodeURIComponent(waMessage)}`;
+                            const isYours = data.zone && z.key === data.zone;
+                            const isStudent = z.key === "student";
+                            return (
+                              <a key={z.key} href={url} target="_blank" rel="noopener noreferrer"
+                                 className={`flex items-center gap-3 rounded-xl p-2.5 border transition-all ${isYours || isStudent ? "border-[#25D366] bg-[#25D366]/5" : "border-black/5 hover:border-[#25D366]/40 bg-white"}`}>
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isStudent ? "bg-gradient-to-br from-[#1F47BA] to-[#0F2F8A]" : "bg-gradient-to-br from-[#25D366] to-[#128C7E]"}`}>
+                                  <MessageCircle className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[12.5px] font-bold text-[#111B21] leading-tight truncate">
+                                    {z.label}{isYours ? "  ·  your zone" : ""}
+                                  </p>
+                                  <p className="text-[10.5px] text-[#667781] leading-tight truncate">{z.sub}</p>
+                                  <p className="text-[11px] text-[#128C7E] font-semibold leading-tight mt-0.5">{z.display}</p>
+                                </div>
+                                <Send className="w-4 h-4 text-[#25D366] flex-shrink-0" />
+                              </a>
+                            );
+                          })}
+                      </div>
                     </div>
 
                     <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-4">

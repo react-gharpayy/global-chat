@@ -141,14 +141,54 @@
 
 /* Force-override hard-coded WhatsApp light hex colors used throughout the form */
 [data-theme="dark"] [class*="text-[#111B21]"] { color: #E9EDEF !important; }
-[data-theme="dark"] [class*="text-[#667781]"] { color: #8696A0 !important; }
-[data-theme="dark"] [class*="text-[#54656F]"] { color: #AEBAC1 !important; }
+[data-theme="dark"] [class*="text-[#667781]"] { color: #AEBAC1 !important; }
+[data-theme="dark"] [class*="text-[#54656F]"] { color: #C7D0D4 !important; }
 [data-theme="dark"] [class*="text-[#5A3A00]"] { color: #FFE08A !important; }
-[data-theme="dark"] [class*="text-[#8696a0]"] { color: #8696A0 !important; }
-[data-theme="dark"] [class*="bg-white/85"] { background-color: rgba(32,44,51,0.85) !important; }
-[data-theme="dark"] [class*="bg-[#FFF6D9]"] { background-color: #2a2410 !important; }
+[data-theme="dark"] [class*="text-[#8696a0]"] { color: #AEBAC1 !important; }
+[data-theme="dark"] [class*="text-[#128C7E]"] { color: #25D366 !important; }
+[data-theme="dark"] [class*="placeholder:text-[#9aa6ad]"]::placeholder { color: #6B7A82 !important; }
+[data-theme="dark"] [class*="bg-white/85"] { background-color: rgba(32,44,51,0.92) !important; }
+[data-theme="dark"] [class*="bg-[#FFF6D9]"] { background-color: #3a2f10 !important; border-color: rgba(255,199,44,0.35) !important; }
 [data-theme="dark"] [class*="bg-[#F0FDF4]"] { background-color: #14281c !important; }
 [data-theme="dark"] [class*="bg-[#FAFAF7]"] { background-color: #1a2329 !important; }
+[data-theme="dark"] [class*="bg-[#F0F2F5]"] { background-color: #2A3942 !important; }
+[data-theme="dark"] [class*="bg-[#DCF8C6]"] { background-color: #005C4B !important; color: #E9EDEF !important; }
+[data-theme="dark"] [class*="bg-[#DCF8C6]"] p { color: #E9EDEF !important; }
+[data-theme="dark"] [class*="bg-amber-50"] { background-color: #3a2f10 !important; }
+[data-theme="dark"] [class*="text-amber-800"] { color: #FFE08A !important; }
+[data-theme="dark"] [class*="border-amber-200"] { border-color: rgba(255,199,44,0.35) !important; }
+
+/* Generic white surfaces flip to dark card; allow opt-out via .gp-keep-light */
+[data-theme="dark"] .wa-chat-bg .bg-white:not(.gp-keep-light),
+[data-theme="dark"] .wa-chat-bg [class*="bg-white "]:not(.gp-keep-light),
+[data-theme="dark"] .wa-chat-bg [class$="bg-white"]:not(.gp-keep-light) {
+  background-color: var(--gp-surface) !important;
+  color: var(--gp-text);
+}
+[data-theme="dark"] .wa-chat-bg .border-black\/5,
+[data-theme="dark"] .wa-chat-bg [class*="border-black/5"],
+[data-theme="dark"] .wa-chat-bg [class*="border-black/10"] {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+[data-theme="dark"] .wa-chat-bg [class*="bg-black/5"] {
+  background-color: rgba(255,255,255,0.06) !important;
+}
+[data-theme="dark"] .wa-chat-bg [class*="bg-black/10"] {
+  background-color: rgba(255,255,255,0.10) !important;
+}
+[data-theme="dark"] .wa-chat-bg input,
+[data-theme="dark"] .wa-chat-bg textarea {
+  color: #E9EDEF !important;
+}
+[data-theme="dark"] .wa-chat-bg input::placeholder,
+[data-theme="dark"] .wa-chat-bg textarea::placeholder {
+  color: #6B7A82 !important;
+}
+/* Today separator chip */
+[data-theme="dark"] .wa-chat-bg .bg-white\/85 {
+  background-color: rgba(32,44,51,0.92) !important;
+  color: #C7D0D4 !important;
+}
 
 html, body { transition: background-color 200ms ease, color 200ms ease; }
 
