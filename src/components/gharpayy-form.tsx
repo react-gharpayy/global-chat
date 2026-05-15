@@ -49,20 +49,20 @@ type Data = {
 
 // ─── Gharpayy 5 zones (from gharpayy.com) ────────────────────────────
 const ZONE_OPTS: ChoiceOpt[] = [
-  { v: "east",    e: "", t: "East — Whitefield belt",        d: "ITPL, Brookfield, Marathalli side" },
-  { v: "orr",     e: "", t: "ORR — Bellandur side",          d: "Sarjapur, Embassy Tech, RMZ" },
-  { v: "north",   e: "", t: "North — Manyata belt",          d: "Hebbal, Hennur, Yelahanka" },
-  { v: "central", e: "", t: "Central — Koramangala belt",    d: "Indiranagar, MG Road, Domlur" },
-  { v: "south",   e: "", t: "South — Electronic City belt",  d: "BTM, JP Nagar, Bommanahalli" },
+  { v: "east",    e: "", t: "East zone — Whitefield",        d: "ITPL, Brookfield, Marathalli area" },
+  { v: "orr",     e: "", t: "ORR zone — Bellandur",          d: "Sarjapur, Embassy Tech, RMZ" },
+  { v: "north",   e: "", t: "North zone — Manyata",          d: "Hebbal, Hennur, Yelahanka" },
+  { v: "central", e: "", t: "Central zone — Koramangala",    d: "Indiranagar, MG Road, Domlur" },
+  { v: "south",   e: "", t: "South zone — Electronic City",  d: "BTM, JP Nagar, Bommanahalli" },
 ];
 
 // ─── Areas / landmarks per zone (multi-select) ───────────────────────
 const ZONE_AREAS: Record<string, string[]> = {
-  east:    ["Whitefield","Brookfield","Marathalli","Mahadevapura","ITPL","EPIP","Kundalahalli","Varthur","Hoodi","KR Puram","Phoenix Marketcity","Graphite Lane","AECS Layout"],
-  orr:     ["Bellandur","Sarjapur Road","Kadubeesanahalli","Devarabeesanahalli","RMZ Ecoworld","Embassy Tech Village","Prestige Tech Park","Cessna Business Park","HSR Layout","Outer Ring Road"],
-  north:   ["Nagawara","Manyata Tech Park","Hebbal","Yeshwanthpur","Hennur","Thanisandra","Jakkur","Yelahanka","Sahakar Nagar","Airport corridor"],
-  central: ["Koramangala","Indiranagar","Vasanth Nagar","MG Road","Domlur","Ulsoor","Richmond Road","Cunningham Road","Lavelle Road","Frazer Town","Shivajinagar"],
-  south:   ["Electronic City Phase 1","Electronic City Phase 2","BTM Layout","JP Nagar","Jayanagar","Bommanahalli","Hosur Road","Bannerghatta Road","Kanakapura Road","Silk Board"],
+  east:    ["Whitefield","Brookfield","Marathalli","Mahadevapura","ITPL","EPIP","Kundalahalli","Kundalahalli Gate","Varthur","Hoodi","KR Puram","Phoenix Marketcity","Graphite Lane","AECS Layout","Kadugodi","Channasandra","Hope Farm","Sadaramangala","Doddanekundi","Garudachar Palya","Borewell Road","Forum Shantiniketan","Hagadur","Immadihalli","Pattandur Agrahara"],
+  orr:     ["Bellandur","Sarjapur Road","Kadubeesanahalli","Devarabeesanahalli","RMZ Ecoworld","Embassy Tech Village","Prestige Tech Park","Cessna Business Park","HSR Layout","Outer Ring Road","Kasavanahalli","Bagmane Tech Park","Iblur","Panathur","Carmelaram","Haralur Road","Sompura Gate","Wipro Sarjapur","Ecospace","Salarpuria Sattva","Bellandur Lake","Kaikondrahalli","Sakra Hospital"],
+  north:   ["Nagawara","Manyata Tech Park","Hebbal","Yeshwanthpur","Hennur","Thanisandra","Jakkur","Yelahanka","Sahakar Nagar","Airport corridor","RT Nagar","Banaswadi","Kalyan Nagar","HRBR Layout","Horamavu","Kammanahalli","Bhartiya City","Yelahanka New Town","Vidyaranyapura","Aerospace Park","Kogilu","Devanahalli road","Jakkur Aerodrome"],
+  central: ["Koramangala","Indiranagar","Vasanth Nagar","MG Road","Domlur","Ulsoor","Richmond Road","Cunningham Road","Lavelle Road","Frazer Town","Shivajinagar","Jeevan Bhima Nagar","HAL","New Thippasandra","CV Raman Nagar","Benson Town","Cox Town","Murphy Town","Halasuru","Brigade Road","Church Street","Commercial Street","St Marks Road","Residency Road","Langford Town"],
+  south:   ["Electronic City Phase 1","Electronic City Phase 2","BTM Layout","JP Nagar","Jayanagar","Bommanahalli","Hosur Road","Bannerghatta Road","Kanakapura Road","Silk Board","Begur","Hulimavu","Arekere","Gottigere","Chandapura","Neeladri Nagar","Singasandra","Kudlu Gate","Hongasandra","Banashankari","Uttarahalli","Konanakunte","Kanakapura main road","NICE road junction"],
 };
 
 const RADIUS_OPTS: ChoiceOpt[] = [
