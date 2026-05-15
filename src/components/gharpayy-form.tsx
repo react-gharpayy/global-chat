@@ -567,6 +567,14 @@ export default function GharpayyForm() {
     return () => clearInterval(id);
   }, [tStart, cur]);
 
+  // 60-tick countdown where each tick = 2 real seconds (relaxed pacing).
+  const [secsLeft, setSecsLeft] = useState(60);
+  useEffect(() => {
+    if (!tStart || cur === "welcome" || cur === "reveal") return;
+    const id = setInterval(() => setSecsLeft(s => (s > 0 ? s - 1 : 0)), 2000);
+    return () => clearInterval(id);
+  }, [tStart, cur]);
+
   // Aayushi "typing" before each new question
   useEffect(() => {
     if (cur === "welcome" || cur === "reveal") { setTyping(false); return; }
@@ -761,11 +769,20 @@ export default function GharpayyForm() {
         />
 
         {isInteractive && (
-          <div className="h-[3px] bg-black/5">
-            <motion.div className="h-full bg-[#25D366]"
-              initial={false}
-              animate={{ width: `${fullness}%` }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }} />
+          <div className="px-3 py-1.5 flex items-center gap-2 border-b border-black/5" style={{ background: "var(--gp-surface)" }}>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums"
+              style={{ background: secsLeft > 10 ? "rgba(37,211,102,0.14)" : "rgba(229,57,53,0.14)", color: secsLeft > 10 ? "#128C7E" : "#C62828" }}>
+              ⏱ 0:{String(secsLeft).padStart(2, "0")}
+            </span>
+            <div className="flex-1 h-[5px] rounded-full bg-black/10 overflow-hidden">
+              <motion.div className="h-full bg-gradient-to-r from-[#25D366] to-[#128C7E]"
+                initial={false}
+                animate={{ width: `${fullness}%` }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }} />
+            </div>
+            <span className="text-[10.5px] font-semibold" style={{ color: "var(--gp-text-muted)" }}>
+              {fullness < 30 ? "warming up" : fullness < 60 ? "getting closer" : fullness < 90 ? "almost there" : "one tap away"}
+            </span>
           </div>
         )}
 
@@ -1116,16 +1133,11 @@ export default function GharpayyForm() {
   );
 }
 
-// ─── Question card: eyebrow + step number + Q + sub ─────────────────
-function QuestionCard({ q, qs, stepNumber, total }: { q: string; qs: string; stepNumber?: number; total?: number }) {
+// ─── Question card: clean Q + sub (no counter) ──────────────────────
+function QuestionCard({ q, qs }: { q: string; qs: string; stepNumber?: number; total?: number }) {
   return (
     <Bubble side="in" delay={0.05}>
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold tracking-wider uppercase" style={{ background: "rgba(18,140,126,0.12)", color: "#128C7E" }}>
-          Question{stepNumber && total ? ` ${stepNumber} of ${total}` : ""}
-        </span>
-      </div>
-      <p className="text-[16px] font-bold text-[#111B21] leading-snug" style={{ fontFamily: "var(--font-display)" }}>{q}</p>
+      <p className="text-[16.5px] font-bold text-[#111B21] leading-snug" style={{ fontFamily: "var(--font-display)" }}>{q}</p>
       {qs && <p className="text-[12.5px] text-[#667781] mt-1.5 leading-snug">{qs}</p>}
     </Bubble>
   );
