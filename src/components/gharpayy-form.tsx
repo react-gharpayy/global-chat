@@ -633,6 +633,7 @@ export default function GharpayyForm() {
     setData(d => ({ ...d, intent: v }));
     if (!tStart) setTStart(Date.now());
     setHistory(h => [...h, "welcome"]);
+    setFuture([]);
     setCur("story");
   };
 
@@ -644,8 +645,9 @@ export default function GharpayyForm() {
       if (s.type === "choice") {
         setTimeout(() => {
           setHistory(h => [...h, cur]);
+          setFuture([]);
           setCur(s.next(next));
-        }, 280);
+        }, 220);
       }
       return next;
     });
@@ -658,8 +660,9 @@ export default function GharpayyForm() {
       const next = { ...d, visit: v };
       setTimeout(() => {
         setHistory(h => [...h, "visit"]);
+        setFuture([]);
         setCur(v === "skip" ? "contact" : "visit_when");
-      }, 280);
+      }, 220);
       return next;
     });
   };
@@ -679,6 +682,7 @@ export default function GharpayyForm() {
     if (!data.name?.trim()) return;
     tap();
     setHistory(h => [...h, "name"]);
+    setFuture([]);
     setCur("matters");
   };
 
@@ -686,6 +690,7 @@ export default function GharpayyForm() {
     if ((data.phone || "").replace(/\D/g, "").length < 10) return;
     setElapsed(tStart ? Math.round((Date.now() - tStart) / 1000) : 0);
     setHistory(h => [...h, "contact"]);
+    setFuture([]);
     setSubmitting(true);
   };
 
@@ -696,7 +701,7 @@ export default function GharpayyForm() {
   }, []);
 
   const restart = () => {
-    setData({}); setHistory([]); setCur("welcome"); setTStart(null); setElapsed(0);
+    setData({}); setHistory([]); setFuture([]); setCur("welcome"); setTStart(null); setElapsed(0);
     setCustomNum(""); setShowCustom(false);
   };
 
